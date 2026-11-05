@@ -1,0 +1,193 @@
+# Texts of the references module (minimal_site.modules.references).
+
+[references.nav]
+en = "References"
+cs = "Reference"
+
+[references.title]
+en = "References"
+cs = "Reference"
+
+[references.subtitle]
+en = "Completed projects of clients shown on the website."
+cs = "Dokončené projekty klientů, které se ukazují na webu."
+
+[references.add]
+en = "Add reference"
+cs = "Přidat referenci"
+
+[references.empty]
+en = "There are no references yet."
+cs = "Zatím tu není žádná reference."
+
+[references.empty_hint]
+en = "Add the first completed project."
+cs = "Přidejte první dokončený projekt."
+
+[references.order_hint]
+en = "The order on the website: drag with the mouse or use the arrows, then save the order."
+cs = "Pořadí na webu: přetáhněte myší nebo použijte šipky a pak pořadí uložte."
+
+[references.save_order]
+en = "Save order"
+cs = "Uložit pořadí"
+
+[references.order_saved]
+en = "The order of references is saved."
+cs = "Pořadí referencí je uložené."
+
+[references.earlier]
+en = "Move {name} up"
+cs = "Posunout {name} výš"
+
+[references.later]
+en = "Move {name} down"
+cs = "Posunout {name} níž"
+
+[references.edit]
+en = "Edit {name}"
+cs = "Upravit {name}"
+
+[references.delete]
+en = "Delete {name}"
+cs = "Smazat {name}"
+
+[references.delete_title]
+en = "Delete reference"
+cs = "Smazat referenci"
+
+[references.delete_confirm]
+en = "Delete the reference {name}? Its image is deleted too."
+cs = "Opravdu smazat referenci {name}? Smaže se i její obrázek."
+
+[references.delete_ok]
+en = "Delete"
+cs = "Smazat"
+
+[references.state.published]
+en = "Published"
+cs = "Zveřejněno"
+
+[references.state.draft]
+en = "Not published"
+cs = "Nezveřejněno"
+
+[references.state.no_consent]
+en = "Consent missing"
+cs = "Chybí souhlas"
+
+[references.new_title]
+en = "New reference"
+cs = "Nová reference"
+
+[references.edit_title]
+en = "Reference {name}"
+cs = "Reference {name}"
+
+[references.section.client]
+en = "Client"
+cs = "Klient"
+
+[references.client_name]
+en = "Client name"
+cs = "Název klienta"
+
+[references.website_url]
+en = "Website address"
+cs = "Adresa webu"
+
+[references.website_url_hint]
+en = "Optional. Typing company.com is enough."
+cs = "Nepovinné. Stačí napsat třeba firma.cz."
+
+[references.section.project]
+en = "Project"
+cs = "Projekt"
+
+[references.description]
+en = "Description"
+cs = "Popis"
+
+[references.description_hint]
+en = "What you did for the client. Headings, bold text, links and lists."
+cs = "Co jste pro klienta udělali. Nadpisy, tučné písmo, odkazy a seznamy."
+
+[references.image]
+en = "Image"
+cs = "Obrázek"
+
+[references.image_hint]
+en = "A preview of the project, e.g. a screenshot of the website. JPEG, PNG or WebP, at most 10 MB."
+cs = "Náhled projektu, třeba snímek webu. JPEG, PNG nebo WebP, nejvýše 10 MB."
+
+[references.section.consent]
+en = "Client's consent"
+cs = "Souhlas klienta"
+
+[references.consent_note]
+en = "A reference may be published only with the client's consent. Note when it was given and how it is documented, so you can prove it when asked."
+cs = "Referenci lze zveřejnit jen se souhlasem klienta. Zapište, kdy ho klient dal a jak je doložený, abyste ho v případě potřeby uměli prokázat."
+
+[references.consent_on]
+en = "Date of consent"
+cs = "Datum souhlasu"
+
+[references.consent_proof]
+en = "How the consent is documented"
+cs = "Jak je souhlas doložený"
+
+[references.consent_proof_placeholder]
+en = "e.g. e-mail of 3 October 2026"
+cs = "např. e-mail ze 3. 10. 2026"
+
+[references.section.publishing]
+en = "Publishing"
+cs = "Zveřejnění"
+
+[references.published]
+en = "Show on the website"
+cs = "Zobrazit na webu"
+
+[references.published_hint]
+en = "Only with a date of consent."
+cs = "Jen s datem souhlasu."
+
+[references.saved]
+en = "The reference {name} is saved."
+cs = "Reference {name} je uložená."
+
+[references.deleted]
+en = "The reference {name} is deleted."
+cs = "Reference {name} je smazaná."
+
+[references.error.summary]
+en = "The form has problems; please correct the marked fields."
+cs = "Formulář obsahuje chyby, opravte prosím označená pole."
+
+[references.error.client_name]
+en = "Fill in the client name."
+cs = "Vyplňte název klienta."
+
+[references.error.too_long]
+en = "The text is too long."
+cs = "Text je příliš dlouhý."
+
+[references.error.url]
+en = "Enter a valid website address, e.g. https://company.com."
+cs = "Zadejte platnou adresu webu, například https://firma.cz."
+
+[references.error.consent_date]
+en = "Enter a valid date."
+cs = "Zadejte platné datum."
+
+[references.error.consent_future]
+en = "The date of consent cannot be in the future."
+cs = "Datum souhlasu nemůže být v budoucnosti."
+
+[references.error.consent_needed]
+en = "Without a date of consent the reference cannot be published."
+cs = "Bez data souhlasu nelze referenci zveřejnit."
+
+[references.error.image]
+en = "The image could not be used. Please upload it again."
+cs = "Obrázek se nepodařilo použít. Nahrajte ho prosím znovu."

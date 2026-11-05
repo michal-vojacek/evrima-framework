@@ -1,0 +1,416 @@
+{#- The admin design cookbook: every component on one page, in the user's
+    language. New admin screens are composed from these components; a new
+    element is added here first. The sample data is invented for display. -#}
+{% extends "evrima/admin/base.html" %}
+{% from "evrima/admin/_macros.html" import page_header, field, textarea, select, csrf, empty, open_button, modal, modal_error, modal_actions, mv, tag_picker, tag_pills, page_form_actions, flash_item, upload, breadcrumbs, pagination, editor %}
+{% block title %}{{ t("admin.design.title") }}{% endblock %}
+{% block content %}
+{% call page_header(t("admin.design.title"), t("admin.design.subtitle"), "swatchbook") %}{% endcall %}
+
+{% set sections = [
+  ("colors", "admin.design.section.colors"), ("type", "admin.design.section.type"),
+  ("buttons", "admin.design.section.buttons"), ("badges", "admin.design.section.badges"),
+  ("cards", "admin.design.section.cards"), ("tables", "admin.design.section.tables"),
+  ("dialog-forms", "admin.design.section.dialog_forms"), ("page-forms", "admin.design.section.page_forms"),
+  ("uploads", "admin.design.section.uploads"), ("ordering", "admin.design.section.ordering"),
+  ("nav", "admin.design.section.nav"), ("feedback", "admin.design.section.feedback"),
+  ("charts", "admin.design.section.charts"), ("languages", "admin.design.section.languages"),
+  ("rules", "admin.design.section.rules"),
+] %}
+{#- Section numbers follow the list above, so a new section renumbers the rest. -#}
+{% set numbers = {} %}{% for anchor, key in sections %}{% if numbers.update({anchor: loop.index}) %}{% endif %}{% endfor %}
+<section class="card">
+  <h2>{{ t("admin.design.contents") }}</h2>
+  <div class="actions-bar">
+    {% for anchor, key in sections %}<a class="btn btn--ghost btn--small" href="#{{ anchor }}">{{ loop.index }}. {{ t(key) }}</a>{% endfor %}
+  </div>
+</section>
+
+{#- Colours -#}
+<section class="card" id="colors">
+  <h2>{{ numbers["colors"] }}. {{ t("admin.design.section.colors") }}</h2>
+  <p class="muted small">{{ t("admin.design.colors.note") }}</p>
+  <div>
+    <span class="swatch"><span class="swatch__color swatch__color--navy"></span>--brand-navy-800</span>
+    <span class="swatch"><span class="swatch__color swatch__color--aqua"></span>--brand-aqua-500</span>
+    <span class="swatch"><span class="swatch__color swatch__color--aqua-light"></span>--brand-aqua-300</span>
+    <span class="swatch"><span class="swatch__color swatch__color--success"></span>--color-success</span>
+    <span class="swatch"><span class="swatch__color swatch__color--warning"></span>--color-warning</span>
+    <span class="swatch"><span class="swatch__color swatch__color--danger"></span>--color-danger</span>
+  </div>
+</section>
+
+{#- Typography -#}
+<section class="card" id="type">
+  <h2>{{ numbers["type"] }}. {{ t("admin.design.section.type") }}</h2>
+  <h1>{{ t("admin.design.type.h1") }}</h1>
+  <h2>{{ t("admin.design.type.h2") }}</h2>
+  <h3>{{ t("admin.design.type.h3") }}</h3>
+  <p>{{ t("admin.design.type.paragraph") }} <strong>{{ t("admin.design.type.bold") }}</strong>, <em>{{ t("admin.design.type.italic") }}</em>, <a href="#type" data-demo>{{ t("admin.design.type.link") }}</a>, <code>{{ t("admin.design.type.code") }}</code>.</p>
+  <p class="muted">{{ t("admin.design.type.muted") }}</p>
+  <p class="muted small">{{ t("admin.design.type.muted_small") }}</p>
+  <p><span class="mono">https://example.com/reference</span>: <code>.mono</code> {{ t("admin.design.type.mono") }}</p>
+</section>
+
+{#- Buttons -#}
+<section class="card" id="buttons">
+  <h2>{{ numbers["buttons"] }}. {{ t("admin.design.section.buttons") }}</h2>
+  <p class="muted small">{{ t("admin.design.buttons.note") }} <code>.btn .btn--primary | --secondary | --danger | --ghost</code>, <code>.btn--small</code>, <code>disabled</code></p>
+  <div class="actions-bar">
+    <button type="button" class="btn btn--primary">{{ t("admin.design.buttons.primary") }}</button>
+    <button type="button" class="btn btn--secondary">{{ t("admin.design.buttons.secondary") }}</button>
+    <button type="button" class="btn btn--danger">{{ t("admin.design.buttons.danger") }}</button>
+    <button type="button" class="btn btn--ghost">{{ t("admin.design.buttons.ghost") }}</button>
+    <button type="button" class="btn btn--primary" disabled>{{ t("admin.design.buttons.disabled") }}</button>
+  </div>
+  <div class="actions-bar mt-1">
+    <button type="button" class="btn btn--primary btn--small"><i class="fa-solid fa-plus"></i> {{ t("admin.design.buttons.add") }}</button>
+    <button type="button" class="btn btn--secondary btn--small"><i class="fa-solid fa-file-csv"></i> {{ t("admin.design.buttons.export") }}</button>
+    <button type="button" class="btn btn--danger btn--small"><i class="fa-solid fa-trash"></i> {{ t("admin.design.buttons.remove") }}</button>
+    <a class="btn btn--ghost btn--small" href="#buttons" data-demo>← {{ t("admin.common.back") }}</a>
+  </div>
+  <div class="actions-bar mt-1">
+    <button type="button" class="btn btn--primary is-busy" disabled aria-busy="true">{{ t("admin.common.save") }}</button>
+    <span class="muted small">{{ t("admin.design.buttons.busy_note") }}</span>
+  </div>
+</section>
+
+{#- Badges and states -#}
+<section class="card" id="badges">
+  <h2>{{ numbers["badges"] }}. {{ t("admin.design.section.badges") }}</h2>
+  <p>
+    <span class="badge">{{ t("admin.design.badges.badge") }}</span>
+    <span class="badge prio--high">{{ t("admin.design.badges.high") }}</span>
+    <span class="badge prio--medium">{{ t("admin.design.badges.medium") }}</span>
+    <span class="badge prio--low">{{ t("admin.design.badges.low") }}</span>
+  </p>
+  <p>
+    <span class="status status--ok">{{ t("admin.design.badges.status_ok") }}</span>
+    <span class="status status--progress">{{ t("admin.design.badges.status_progress") }}</span>
+    <span class="status status--warn">{{ t("admin.design.badges.status_warn") }}</span>
+    <span class="status status--planned">{{ t("admin.design.badges.status_planned") }}</span>
+    <span class="status status--missing">{{ t("admin.design.badges.status_missing") }}</span>
+    <span class="status status--na">{{ t("admin.design.badges.status_na") }}</span>
+    <span class="status status--inactive">{{ t("admin.design.badges.status_inactive") }}</span>
+  </p>
+  <p class="design-row">
+    <span><span class="dot dot--ok"></span>{{ t("admin.design.badges.dot_ok") }}</span>
+    <span><span class="dot dot--warn"></span>{{ t("admin.design.badges.dot_warn") }}</span>
+    <span><span class="dot dot--bad"></span>{{ t("admin.design.badges.dot_bad") }}</span>
+    <span><span class="dot"></span>{{ t("admin.design.badges.dot_unknown") }}</span>
+  </p>
+  <p class="design-row">
+    <span class="live"><span class="live__dot"></span>{{ t("admin.design.badges.live") }}</span>
+    <span class="live live--stale"><span class="live__dot"></span>{{ t("admin.design.badges.live_stale") }}</span>
+    <span class="live live--error"><span class="live__dot"></span>{{ t("admin.design.badges.live_error") }}</span>
+  </p>
+</section>
+
+{#- Cards and statistics -#}
+<section class="card" id="cards">
+  <h2>{{ numbers["cards"] }}. {{ t("admin.design.section.cards") }}</h2>
+  <div class="stats-grid">
+    <a class="stat-card" href="#cards" data-demo>
+      <div class="stat-card__label">{{ t("admin.design.cards.stat_references") }}</div>
+      <div class="stat-card__value">12</div>
+      <div class="stat-card__breakdown"><span class="status status--ok">{{ t("admin.design.cards.published", count=10) }}</span></div>
+    </a>
+    <a class="stat-card" href="#cards" data-demo>
+      <div class="stat-card__label">{{ t("admin.design.cards.stat_enquiries") }}</div>
+      <div class="stat-card__value">27</div>
+      <div class="stat-card__breakdown"><span class="badge">{{ t("admin.design.cards.new_today", count=3) }}</span></div>
+    </a>
+    <div class="stat-card">
+      <div class="stat-card__label">{{ t("admin.design.cards.stat_response") }}</div>
+      <div class="stat-card__value">84<span class="muted small"> ms</span></div>
+      <div class="stat-card__breakdown"><span class="status status--ok">{{ t("admin.design.cards.healthy") }}</span></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <section class="card">
+      <h2>{{ t("admin.design.cards.summary_title") }}</h2>
+      <dl class="summary">
+        <dt>{{ t("admin.design.cards.name") }}</dt><dd>{{ t("admin.design.dialog.sample_name") }}</dd>
+        <dt>{{ t("admin.design.cards.address") }}</dt><dd class="mono">https://example.com</dd>
+        <dt>{{ t("admin.design.cards.module") }}</dt><dd><code>references</code></dd>
+      </dl>
+    </section>
+    <aside class="info-card">
+      <h3><i class="fa-solid fa-lightbulb"></i> {{ t("admin.design.cards.info_title") }}</h3>
+      <p class="muted small mb-0">{{ t("admin.design.cards.info_text") }}</p>
+    </aside>
+  </div>
+</section>
+
+{#- Tables -#}
+<section class="card" id="tables">
+  <h2>{{ numbers["tables"] }}. {{ t("admin.design.section.tables") }}</h2>
+  <p class="muted small">{{ t("admin.design.tables.note") }}</p>
+  <table class="data-table data-table--compact js-datatable" data-page-length="10">
+      <thead><tr>
+        <th>{{ t("admin.design.tables.state") }}</th>
+        <th>{{ t("admin.design.tables.client") }}</th>
+        <th>{{ t("admin.design.tables.website") }}</th>
+        <th class="num">{{ t("admin.design.tables.photos") }}</th>
+        <th data-orderable="false"><span class="sr-only">{{ t("admin.design.tables.detail") }}</span></th>
+      </tr></thead>
+      <tbody>
+      {% for number in range(1, 31) %}
+        {% set tone = ["ok", "ok", "warn", "ok", "bad"][number % 5] %}
+        {% set state_key = {"ok": "admin.design.badges.status_ok", "warn": "admin.design.badges.status_progress", "bad": "admin.design.badges.status_inactive"}[tone] %}
+        <tr class="{{ 'is-inactive' if tone == 'bad' }}">
+          <td><span class="dot dot--{{ tone }}"></span>{{ t(state_key) }}</td>
+          <td><a href="#tables" data-demo>{{ t("admin.design.tables.sample_client", number=number) }}</a></td>
+          <td class="mono">client-{{ '%02d' | format(number) }}.example.com</td>
+          <td class="num">{{ (number * 7) % 23 }}</td>
+          <td class="actions"><a class="btn btn--ghost btn--small" href="#tables" data-demo>{{ t("admin.design.tables.detail") }}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+</section>
+
+{#- Short forms in a dialog -#}
+{% set demo_tags = [
+  {"name": t("admin.design.dialog.tag_wood"), "color": "amber", "icon": "tree"},
+  {"name": t("admin.design.dialog.tag_kitchen"), "color": "blue", "icon": "kitchen-set"},
+  {"name": t("admin.design.dialog.tag_interior"), "color": "green", "icon": "couch"},
+] %}
+<section class="card" id="dialog-forms">
+  <h2>{{ numbers["dialog-forms"] }}. {{ t("admin.design.section.dialog_forms") }}</h2>
+  <p class="muted small">{{ t("admin.design.dialog.rule") }}</p>
+  <dl class="facts">
+    <dt>{{ t("admin.design.dialog.name") }}</dt><dd>{{ t("admin.design.dialog.sample_name") }}</dd>
+    <dt>{{ t("admin.design.dialog.url") }}</dt><dd class="mono">https://example.com</dd>
+    <dt>{{ t("admin.forms.tags_label") }}</dt><dd>{{ tag_pills(demo_tags[:2]) }}</dd>
+  </dl>
+  <div class="card__footer">{{ open_button("demo-form", t("admin.design.dialog.open"), icon="pen", cls="btn--secondary") }}</div>
+</section>
+
+{% call(reopened) modal("demo-form", t("admin.design.dialog.title"), "pen", "wide") %}
+<form method="get" action="{{ url_for('evrima_admin.design') }}#dialog-forms">
+  <div class="modal__content">
+    {{ modal_error("demo-form") }}
+    <div class="modal__section">{{ t("admin.design.dialog.section") }}</div>
+    <div class="form-row">
+      {{ field("demo_name", t("admin.design.dialog.name"), mv("demo-form", "demo_name", t("admin.design.dialog.sample_name")), required=True) }}
+      {{ field("demo_slug", t("admin.design.dialog.slug"), "", hint=t("admin.design.dialog.slug_hint"), attrs={"data-slug-from": "f-demo_name"}, cls="mono") }}
+    </div>
+    {{ field("demo_url", t("admin.design.dialog.url"), "example.com", type="url", invalid=t("admin.design.dialog.url_error")) }}
+    {{ tag_picker("demo_tags", [demo_tags[0].name], demo_tags) }}
+    {{ select("demo_visibility", t("admin.design.dialog.visibility"), [("published", t("admin.design.dialog.visible")), ("hidden", t("admin.design.dialog.hidden"))], "published") }}
+  </div>
+  {{ modal_actions(note=t("admin.design.dialog.note")) }}
+</form>
+{% endcall %}
+
+{#- Larger forms on their own page (shown here inline) -#}
+<section class="card" id="page-forms">
+  <h2>{{ numbers["page-forms"] }}. {{ t("admin.design.section.page_forms") }}</h2>
+  <p class="muted small">{{ t("admin.design.page.rule") }}</p>
+  <form class="page-form" method="get" action="{{ url_for('evrima_admin.design') }}#page-forms">
+    <fieldset class="form-section">
+      <legend>{{ t("admin.design.page.section_content") }}</legend>
+      <div class="form-row">
+        {{ field("page_title", t("admin.design.page.title_field"), "", required=True) }}
+        <div class="field">
+          <label for="f-page_date">{{ t("admin.design.page.date") }}</label>
+          <input class="input" type="datetime-local" id="f-page_date" data-utc-for="page_date">
+          <input type="hidden" name="page_date" value="2026-10-14T08:30:00Z">
+        </div>
+      </div>
+      {{ editor("page_text", t("admin.design.page.text"), t("admin.design.page.text_sample"), hint=t("admin.design.page.editor_hint")) }}
+      {{ textarea("page_description", t("admin.design.page.description"), "", rows=2, maxlength=160, hint=t("admin.design.page.description_hint")) }}
+      {{ upload("page_photos", t("admin.design.page.photos"), multiple=True, hint=t("admin.design.page.photos_hint")) }}
+    </fieldset>
+    <fieldset class="form-section">
+      <legend>{{ t("admin.design.page.section_publishing") }}</legend>
+      <div class="choice-list">
+        <label class="choice"><input type="radio" name="page_publish" value="now" checked>
+          <span><strong>{{ t("admin.design.page.publish_now") }}</strong><span class="muted small">{{ t("admin.design.page.publish_now_hint") }}</span></span></label>
+        <label class="choice"><input type="radio" name="page_publish" value="draft">
+          <span><strong>{{ t("admin.design.page.publish_draft") }}</strong><span class="muted small">{{ t("admin.design.page.publish_draft_hint") }}</span></span></label>
+      </div>
+      {#- Yes/no settings: switches. Several choices from a list: checkboxes. -#}
+      <ul class="switch-list mt-1">
+        <li><label><input type="checkbox" class="switch" role="switch" name="page_home" checked>
+          <span>{{ t("admin.design.page.homepage") }}<span class="muted small">{{ t("admin.design.page.homepage_hint") }}</span></span></label></li>
+        <li><label><input type="checkbox" class="switch" role="switch" name="page_pin">
+          <span>{{ t("admin.design.page.newsletter") }}<span class="muted small">{{ t("admin.design.page.pin_hint") }}</span></span></label></li>
+      </ul>
+      <fieldset class="field mt-1">
+        <legend class="field__label">{{ t("admin.design.page.categories") }}</legend>
+        <ul class="checkbox-list">
+          <li><label><input type="checkbox" name="page_categories" value="kitchens" checked> {{ t("admin.design.dialog.tag_kitchen") }}</label></li>
+          <li><label><input type="checkbox" name="page_categories" value="wood"> {{ t("admin.design.dialog.tag_wood") }}</label></li>
+          <li><label><input type="checkbox" name="page_categories" value="interiors" checked> {{ t("admin.design.dialog.tag_interior") }}</label></li>
+          <li><label><input type="checkbox" name="page_categories" value="archive" disabled> {{ t("admin.design.page.archive") }}</label></li>
+        </ul>
+      </fieldset>
+    </fieldset>
+    {{ page_form_actions(url_for('evrima_admin.design') ~ '#page-forms') }}
+  </form>
+</section>
+
+
+{#- Uploads: drop zone, previews, type and size check (admin.js). -#}
+<section class="card" id="uploads">
+  <h2>{{ numbers["uploads"] }}. {{ t("admin.design.section.uploads") }}</h2>
+  <p class="muted small">{{ t("admin.design.uploads.note") }}</p>
+  <form method="post" action="{{ url_for('evrima_admin.design') }}#uploads">
+    {{ csrf() }}
+    <div class="form-row">
+      {{ upload("demo_logo", t("admin.design.uploads.logo"), hint=t("admin.design.uploads.logo_hint"), max_bytes=2097152) }}
+      {{ upload("demo_photos", t("admin.design.uploads.photos"), multiple=True, hint=t("admin.design.page.photos_hint")) }}
+    </div>
+    {{ upload("demo_documents", t("admin.design.uploads.document"), multiple=True, accept="application/pdf,.pdf",
+              kinds="document", max_bytes=20971520, hint=t("admin.design.uploads.document_hint")) }}
+  </form>
+</section>
+
+{#- Ordering: drag with a mouse, arrow buttons on touch screens and keyboards (admin.js). -#}
+<section class="card" id="ordering">
+  <h2>{{ numbers["ordering"] }}. {{ t("admin.design.section.ordering") }}</h2>
+  <p class="muted small">{{ t("admin.design.ordering.note") }}</p>
+  <form method="post" action="{{ url_for('evrima_admin.design') }}#ordering">
+    {{ csrf() }}
+    <input type="hidden" name="gallery_order">
+    <ul class="gallery" data-sortable="grid" data-sortable-input="gallery_order">
+      {% for n in range(1, 6) %}
+      {% set label = t("admin.design.ordering.photo", number=n) %}
+      <li class="gallery__item" data-sortable-item data-id="{{ n }}" data-label="{{ label }}" draggable="true">
+        <span class="gallery__cover">{{ t("admin.design.ordering.cover") }}</span>
+        <img src="{{ url_for('evrima.static', filename='img/demo/photo-%d.svg' % n) }}" alt="{{ label }}" loading="lazy" width="400" height="300">
+        <span class="gallery__caption">{{ label }}</span>
+        <div class="gallery__actions">
+          <span>
+            <button type="button" class="btn btn--ghost btn--small btn--icon" data-move="up" aria-label="{{ t('admin.design.ordering.earlier', name=label) }}"><i class="fa-solid fa-arrow-left"></i></button>
+            <button type="button" class="btn btn--ghost btn--small btn--icon" data-move="down" aria-label="{{ t('admin.design.ordering.later', name=label) }}"><i class="fa-solid fa-arrow-right"></i></button>
+          </span>
+          <button type="button" class="btn btn--ghost btn--small btn--icon" data-sortable-remove aria-label="{{ t('admin.design.ordering.remove', name=label) }}"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+
+    <h3 class="mt-1">{{ t("admin.design.ordering.list_title") }}</h3>
+    <input type="hidden" name="list_order">
+    <ul class="sortable-list" data-sortable data-sortable-input="list_order">
+      {% for n in range(1, 5) %}
+      {% set label = t("admin.design.tables.sample_client", number=n) %}
+      {#- A row with a thumbnail, state and actions (the references list). -#}
+      <li class="sortable-list__item" data-sortable-item data-id="{{ n }}" data-label="{{ label }}" draggable="true">
+        <i class="fa-solid fa-grip-vertical sortable__grip" aria-hidden="true"></i>
+        <span class="sortable-list__thumb">
+          {%- if n < 4 %}<img src="{{ url_for('evrima.static', filename='img/demo/photo-%d.svg' % n) }}" alt="" loading="lazy">
+          {%- else %}<i class="fa-regular fa-image" aria-hidden="true"></i>{% endif -%}
+        </span>
+        <span class="sortable-list__body">
+          <strong>{{ label }}</strong>
+          <span class="sortable-list__meta">
+            {% if n != 2 %}<span class="status status--ok">{{ t("admin.design.nav.tab_published") }}</span>
+            {% else %}<span class="status status--na">{{ t("admin.design.nav.tab_drafts") }}</span>{% endif %}
+          </span>
+        </span>
+        <span class="sortable-list__actions">
+          <button type="button" class="btn btn--ghost btn--small btn--icon" data-move="up" aria-label="{{ t('admin.design.ordering.earlier', name=label) }}"><i class="fa-solid fa-arrow-up"></i></button>
+          <button type="button" class="btn btn--ghost btn--small btn--icon" data-move="down" aria-label="{{ t('admin.design.ordering.later', name=label) }}"><i class="fa-solid fa-arrow-down"></i></button>
+          <button type="button" class="btn btn--ghost btn--small btn--icon" aria-label="{{ t('admin.common.edit') }}" data-tip="{{ t('admin.common.edit') }}"><i class="fa-solid fa-pen"></i></button>
+          <button type="button" class="btn btn--danger btn--small btn--icon" aria-label="{{ t('admin.design.ordering.remove', name=label) }}" data-tip="{{ t('admin.design.ordering.remove', name=label) }}"><i class="fa-solid fa-trash"></i></button>
+        </span>
+      </li>
+      {% endfor %}
+    </ul>
+  </form>
+</section>
+
+{#- Navigation and filters -#}
+<section class="card" id="nav">
+  <h2>{{ numbers["nav"] }}. {{ t("admin.design.section.nav") }}</h2>
+  {{ breadcrumbs([(t("admin.frame.nav_home"), "#nav"), (t("admin.design.cards.stat_references"), "#nav"), (t("admin.design.dialog.sample_name"), None)]) }}
+  <nav class="subnav" data-demo-group>
+    <a class="subnav__item is-active" href="#nav" data-demo aria-current="page">{{ t("admin.design.nav.tab_all") }}</a>
+    <a class="subnav__item" href="#nav" data-demo>{{ t("admin.design.nav.tab_published") }}</a>
+    <a class="subnav__item" href="#nav" data-demo>{{ t("admin.design.nav.tab_drafts") }}</a>
+  </nav>
+  <div class="filter-bar" data-demo-group>
+    <a class="filter-chip is-active" href="#nav" data-demo>{{ t("admin.design.nav.chip_new") }} <span class="filter-chip__count">4</span></a>
+    <a class="filter-chip" href="#nav" data-demo>{{ t("admin.design.nav.chip_answered") }}</a>
+    <a class="filter-chip" href="#nav" data-demo>{{ t("admin.design.nav.chip_spam") }} <span class="filter-chip__count">12</span></a>
+  </div>
+  <form class="filter-bar" method="post" action="{{ url_for('evrima_admin.design') }}#nav">
+    {{ csrf() }}
+    <div class="filter-bar__field"><label for="demo_q">{{ t("admin.design.nav.filter_text") }}</label><input class="input" id="demo_q" name="q" size="16"></div>
+    <div class="filter-bar__field"><label for="demo_from">{{ t("admin.design.nav.filter_from") }}</label><input class="input" id="demo_from" type="date" name="from"></div>
+    <div class="filter-bar__field"><label for="demo_state">{{ t("admin.design.nav.filter_state") }}</label>
+      <select class="input" id="demo_state" name="state"><option>{{ t("admin.design.nav.filter_any") }}</option><option>{{ t("admin.design.nav.chip_new") }}</option><option>{{ t("admin.design.nav.chip_answered") }}</option></select></div>
+    <div class="filter-bar__field"><button class="btn btn--primary btn--small" type="button">{{ t("admin.design.nav.filter_submit") }}</button></div>
+  </form>
+  {% macro demo_page(n) %}#nav{% endmacro %}
+  {{ pagination(7, 12, demo_page) }}
+  <p class="muted small">{{ t("admin.design.nav.pagination_note") }}</p>
+</section>
+
+{#- Feedback -#}
+<section class="card" id="feedback">
+  <h2>{{ numbers["feedback"] }}. {{ t("admin.design.section.feedback") }}</h2>
+  <ul class="flash">
+    {{ flash_item("success", t("admin.design.feedback.flash_success")) }}
+    {{ flash_item("info", t("admin.design.feedback.flash_info")) }}
+    {{ flash_item("warning", t("admin.design.feedback.flash_warning")) }}
+    {{ flash_item("danger", t("admin.design.feedback.flash_danger")) }}
+  </ul>
+  <div class="verdict verdict--ok"><i class="fa-solid fa-circle-check verdict__icon"></i><div><p class="verdict__title">{{ t("admin.design.feedback.verdict_ok") }}</p><div>{{ t("admin.design.feedback.verdict_ok_text") }}</div></div></div>
+  <div class="verdict verdict--warn"><i class="fa-solid fa-circle-question verdict__icon"></i><div><p class="verdict__title">{{ t("admin.design.feedback.verdict_warn") }}</p><div>{{ t("admin.design.feedback.verdict_warn_text") }}</div></div></div>
+  {{ empty(t("admin.design.feedback.empty"), t("admin.design.feedback.empty_hint")) }}
+  <details class="disclosure mt-1">
+    <summary>{{ t("admin.design.feedback.disclosure_q1") }}</summary>
+    <p>{{ t("admin.design.feedback.disclosure_a1") }}</p>
+  </details>
+  <details class="disclosure">
+    <summary>{{ t("admin.design.feedback.disclosure_q2") }}</summary>
+    <p>{{ t("admin.design.feedback.disclosure_a2") }}</p>
+  </details>
+  <div class="actions-bar mt-1">
+    <form method="get" action="{{ url_for('evrima_admin.design') }}#feedback" class="inline-form"
+          data-confirm="{{ t('admin.design.feedback.confirm_text') }}"
+          data-confirm-title="{{ t('admin.design.feedback.confirm_title') }}"
+          data-confirm-ok="{{ t('admin.design.feedback.confirm_ok') }}">
+      <button class="btn btn--danger btn--small" type="submit"><i class="fa-solid fa-trash"></i> {{ t("admin.design.feedback.confirm_button") }}</button>
+    </form>
+    <button type="button" class="btn btn--ghost btn--small" data-tip="{{ t('admin.design.feedback.tooltip_text') }}"><i class="fa-solid fa-circle-info"></i> {{ t("admin.design.feedback.tooltip") }}</button>
+  </div>
+</section>
+
+{#- Charts -#}
+<section class="card" id="charts">
+  <h2>{{ numbers["charts"] }}. {{ t("admin.design.section.charts") }}</h2>
+  <p class="muted small">{{ t("admin.design.charts.note") }}</p>
+  <div class="bars">{% for h in [20, 35, 50, 42, 60, 80, 74, 90, 66, 40, 55, 70] %}<span class="bars__bar {{ 'bars__bar--problem' if loop.index == 9 }}" data-height="{{ h }}"></span>{% endfor %}</div>
+  <div class="bars__axis muted small"><span>{{ t("admin.design.charts.from") }}</span><span>{{ t("admin.design.charts.to") }}</span></div>
+</section>
+
+{#- Languages -#}
+<section class="card" id="languages">
+  <h2>{{ numbers["languages"] }}. {{ t("admin.design.section.languages") }}</h2>
+  <p class="muted small">{{ t("admin.design.languages.note") }}</p>
+  {% include "evrima/admin/_language_switch.html" %}
+  <p class="mt-1">{{ t("admin.design.languages.plural") }}
+    {% for count in [1, 2, 5] %}<span class="badge">{{ tn("admin.design.languages.photos", count) }}</span> {% endfor %}
+  </p>
+</section>
+
+{#- Rules -#}
+<section class="card" id="rules">
+  <h2>{{ numbers["rules"] }}. {{ t("admin.design.section.rules") }}</h2>
+  <ul>
+    <li>{{ t("admin.design.rules.compose") }}</li>
+    <li>{{ t("admin.design.rules.csp") }}</li>
+    <li>{{ t("admin.design.rules.texts") }}</li>
+    <li>{{ t("admin.design.rules.forms") }}</li>
+    <li>{{ t("admin.design.rules.escape") }}</li>
+    <li>{{ t("admin.design.rules.post") }}</li>
+  </ul>
+</section>
+{% endblock %}

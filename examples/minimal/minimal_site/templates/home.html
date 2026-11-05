@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Minimal Evrima website</title>
+  {#- Styles come from a file, never from a <style> block or style="…":
+      the Content-Security-Policy only allows the website's own files. -#}
+  <link rel="stylesheet" href="{{ url_for('static', filename='site.css') }}">
+</head>
+<body>
+  <main class="page">
+    <h1>Minimal Evrima website</h1>
+    <p>This page is served by a website package that uses Evrima as its core.</p>
+    <p><a href="{{ url_for('pages.reference_list') }}">References</a> come from the references module.</p>
+  </main>
+</body>
+</html>

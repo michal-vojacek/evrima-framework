@@ -1,0 +1,14 @@
+{% extends "evrima/admin/auth/base.html" %}
+{% from "evrima/admin/_macros.html" import field, csrf %}
+{% block title %}{{ t("auth.forgot.title") }}{% endblock %}
+{% block content %}
+<h1>{{ t("auth.forgot.title") }}</h1>
+<p class="muted">{{ t("auth.forgot.intro") }}</p>
+<form method="post" action="{{ url_for('evrima_auth.forgot_password') }}">
+  {{ csrf() }}
+  {{ field("email", t("auth.login.email"), type="email", required=True,
+           attrs={"autocomplete": "username", "autofocus": True}) }}
+  <button class="btn btn--primary" type="submit">{{ t("auth.forgot.submit") }}</button>
+</form>
+<p class="auth-alt"><a href="{{ url_for('evrima_auth.login') }}">← {{ t("auth.login.title") }}</a></p>
+{% endblock %}

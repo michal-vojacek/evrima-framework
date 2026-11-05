@@ -1,0 +1,30 @@
+{#- Default markup of published references for website pages.
+
+    {% from "references/_public.html" import reference_list %}
+    {{ reference_list(published_references()) }}
+
+    The website styles it (classes references, references__item, …) or
+    writes its own markup from the same data. Images come in AVIF and WebP
+    in several widths; `sizes` tells the browser how wide they are shown, so
+    it downloads the smallest variant that is sharp enough. -#}
+{% macro reference_list(items, heading="h3", sizes="(min-width: 60em) 33vw, (min-width: 40em) 50vw, 100vw") %}
+{%- set tag = heading if heading in ("h2", "h3", "h4") else "h3" -%}
+<ul class="references">
+  {% for item in items %}
+  <li class="references__item">
+    {% if item.image %}
+    <picture class="references__image">
+      <source type="image/avif" srcset="{{ media_srcset(item.image, 'avif') }}" sizes="{{ sizes }}">
+      <source type="image/webp" srcset="{{ media_srcset(item.image, 'webp') }}" sizes="{{ sizes }}">
+      <img src="{{ media_url(item.image) }}" alt="{{ item.client_name }}"
+           width="{{ item.image.width }}" height="{{ item.image.height }}" loading="lazy" decoding="async">
+    </picture>
+    {% endif %}
+    <{{ tag }} class="references__name">
+      {%- if item.website_url %}<a href="{{ item.website_url }}">{{ item.client_name }}</a>{% else %}{{ item.client_name }}{% endif -%}
+    </{{ tag }}>
+    {% if item.description %}<div class="references__description">{{ item.description | rich }}</div>{% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% endmacro %}

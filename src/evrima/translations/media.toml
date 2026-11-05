@@ -1,0 +1,17 @@
+# Texts of uploaded files (evrima.media): reasons for refusing an upload.
+
+[media.error.type]
+en = "This file type is not allowed. Allowed: JPEG, PNG, WebP images and PDF documents, as the field states."
+cs = "Tento typ souboru není povolený. Povolené jsou obrázky JPEG, PNG, WebP a dokumenty PDF, jak uvádí pole."
+
+[media.error.size]
+en = "The file is too large, at most {max}."
+cs = "Soubor je příliš velký, nejvýše {max}."
+
+[media.error.too_many_pixels]
+en = "The image has too many pixels. Save it smaller and try again."
+cs = "Obrázek má příliš mnoho pixelů. Uložte ho menší a zkuste to znovu."
+
+[media.error.broken]
+en = "The image could not be read. It may be damaged."
+cs = "Obrázek nejde přečíst. Možná je poškozený."

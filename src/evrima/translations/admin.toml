@@ -1,0 +1,1005 @@
+# Texts of the admin frame and of the /admin/design cookbook.
+#
+# Every key lists all languages side by side (see evrima/i18n.py). Czech texts
+# follow Czech typography: a no-break space ( ) after one-letter
+# prepositions and conjunctions (v, k, s, z, o, u, a, i).
+
+# --- Shared --------------------------------------------------------------------
+
+[admin.common.save]
+en = "Save"
+cs = "Uložit"
+
+[admin.common.cancel]
+en = "Cancel"
+cs = "Zrušit"
+
+[admin.common.edit]
+en = "Edit"
+cs = "Upravit"
+
+[admin.common.close]
+en = "Close"
+cs = "Zavřít"
+
+[admin.common.back]
+en = "Back"
+cs = "Zpět"
+
+[admin.common.required]
+en = "required"
+cs = "povinné"
+
+[admin.common.empty_value]
+en = "–"
+cs = "–"
+
+# --- Frame: sidebar, user menu, footer ------------------------------------------
+
+[admin.frame.title_suffix]
+en = "Administration"
+cs = "Administrace"
+
+[admin.frame.skip_link]
+en = "Skip to content"
+cs = "Přeskočit na obsah"
+
+[admin.frame.nav_label]
+en = "Main navigation"
+cs = "Hlavní navigace"
+
+[admin.frame.user_menu]
+en = "User menu"
+cs = "Uživatelské menu"
+
+[admin.frame.language]
+en = "Language"
+cs = "Jazyk"
+
+[admin.frame.footer]
+en = "Evrima {version} · times in your browser's time zone"
+cs = "Evrima {version} · časy v časovém pásmu vašeho prohlížeče"
+
+[admin.frame.section_main]
+en = "Overview"
+cs = "Přehled"
+
+[admin.frame.section_content]
+en = "Content"
+cs = "Obsah"
+
+[admin.frame.nav_home]
+en = "Start"
+cs = "Úvod"
+
+[admin.index.title]
+en = "Administration"
+cs = "Administrace"
+
+[admin.index.welcome]
+en = "Welcome, {name}."
+cs = "Vítejte, {name}."
+
+[admin.index.empty]
+en = "The website's modules will show their overview here."
+cs = "Tady budou přehledy modulů webu."
+
+[admin.language.saved]
+en = "The admin is now in English."
+cs = "Administrace je teď v češtině."
+
+# --- Forms ------------------------------------------------------------------------
+
+[admin.forms.tags_label]
+en = "Tags"
+cs = "Štítky"
+
+[admin.forms.tags_placeholder]
+en = "Pick one or type a new one…"
+cs = "Vyberte nebo napište nový…"
+
+# --- Texts handed to admin.js ------------------------------------------------------
+
+[admin.js.cancel]
+en = "Cancel"
+cs = "Zrušit"
+
+[admin.js.confirm_title]
+en = "Confirm action"
+cs = "Potvrzení akce"
+
+[admin.js.confirm_ok]
+en = "Confirm"
+cs = "Potvrdit"
+
+[admin.js.loading]
+en = "Loading…"
+cs = "Načítám…"
+
+[admin.js.nav.open]
+en = "Open menu"
+cs = "Otevřít menu"
+
+[admin.js.nav.close]
+en = "Close menu"
+cs = "Zavřít menu"
+
+[admin.js.copied]
+en = "Copied"
+cs = "Zkopírováno"
+
+[admin.js.dt.search]
+en = "Search…"
+cs = "Hledat…"
+
+[admin.js.dt.length_menu]
+en = "Show _MENU_"
+cs = "Zobrazit _MENU_"
+
+[admin.js.dt.info]
+en = "_START_–_END_ of _TOTAL_"
+cs = "_START_–_END_ z _TOTAL_"
+
+[admin.js.dt.info_empty]
+en = "No records"
+cs = "Žádné záznamy"
+
+[admin.js.dt.info_filtered]
+en = "(filtered from _MAX_)"
+cs = "(filtrováno z _MAX_)"
+
+[admin.js.dt.zero_records]
+en = "Nothing found"
+cs = "Nic nenalezeno"
+
+[admin.js.dt.empty_table]
+en = "No data"
+cs = "Žádná data"
+
+[admin.js.live.updated]
+en = "updated {time}"
+cs = "aktualizováno {time}"
+
+[admin.js.live.failed]
+en = "update failed"
+cs = "aktualizace selhala"
+
+[admin.js.live.paused]
+en = "paused (tab in the background)"
+cs = "pozastaveno (karta na pozadí)"
+
+[admin.js.tags.remove]
+en = "Remove {name}"
+cs = "Odebrat {name}"
+
+[admin.js.tags.all_selected]
+en = "All tags are selected; type a new one."
+cs = "Všechny štítky jsou vybrané, napište nový."
+
+[admin.js.tags.type_new]
+en = "Type the name of a new tag."
+cs = "Napište název nového štítku."
+
+[admin.js.tags.new]
+en = "New tag “{name}”"
+cs = "Nový štítek „{name}“"
+
+# --- /admin/design: page and contents -------------------------------------------
+
+[admin.design.title]
+en = "Design system"
+cs = "Design systém"
+
+[admin.design.subtitle]
+en = "Every admin component on one page. New screens are composed from these; a new element comes here first."
+cs = "Všechny komponenty administrace na jedné stránce. Nové obrazovky se skládají z nich, nový prvek přijde nejdřív sem."
+
+[admin.design.contents]
+en = "Contents"
+cs = "Obsah"
+
+[admin.design.section.colors]
+en = "Colours"
+cs = "Barvy"
+
+[admin.design.section.type]
+en = "Typography"
+cs = "Typografie"
+
+[admin.design.section.buttons]
+en = "Buttons"
+cs = "Tlačítka"
+
+[admin.design.section.badges]
+en = "Badges and states"
+cs = "Odznaky a stavy"
+
+[admin.design.section.cards]
+en = "Cards and statistics"
+cs = "Karty a statistiky"
+
+[admin.design.section.tables]
+en = "Tables"
+cs = "Tabulky"
+
+[admin.design.section.dialog_forms]
+en = "Short forms: dialog"
+cs = "Krátké formuláře: dialog"
+
+[admin.design.section.page_forms]
+en = "Larger forms: own page"
+cs = "Větší formuláře: vlastní stránka"
+
+[admin.design.section.nav]
+en = "Navigation and filters"
+cs = "Navigace a filtry"
+
+[admin.design.section.feedback]
+en = "Feedback"
+cs = "Zpětná vazba"
+
+[admin.design.section.charts]
+en = "Charts"
+cs = "Grafy"
+
+[admin.design.section.languages]
+en = "Languages"
+cs = "Jazyky"
+
+[admin.design.section.rules]
+en = "Rules"
+cs = "Pravidla"
+
+# --- /admin/design: sections ---------------------------------------------------
+
+[admin.design.colors.note]
+en = "Tokens in :root of admin.css. Templates never use hex values directly. The colours will be reviewed later."
+cs = "Tokeny v :root v admin.css. Šablony nikdy nepoužívají přímé hex hodnoty. Barvy ještě projdeme později."
+
+[admin.design.type.h1]
+en = "H1: page title"
+cs = "H1: nadpis stránky"
+
+[admin.design.type.h2]
+en = "H2: card title"
+cs = "H2: nadpis karty"
+
+[admin.design.type.h3]
+en = "H3: subsection"
+cs = "H3: podsekce"
+
+[admin.design.type.paragraph]
+en = "A regular paragraph."
+cs = "Běžný odstavec."
+
+[admin.design.type.bold]
+en = "Bold"
+cs = "Tučně"
+
+[admin.design.type.italic]
+en = "italic"
+cs = "kurzíva"
+
+[admin.design.type.link]
+en = "a link"
+cs = "odkaz"
+
+[admin.design.type.code]
+en = "inline code"
+cs = "kód v textu"
+
+[admin.design.type.muted]
+en = "Muted: secondary information."
+cs = "Tlumený text: vedlejší informace."
+
+[admin.design.type.muted_small]
+en = "Muted and small: notes below a table."
+cs = "Tlumený a malý text: poznámky pod tabulkou."
+
+[admin.design.type.mono]
+en = "for addresses, codes and identifiers."
+cs = "pro adresy, kódy a identifikátory."
+
+[admin.design.buttons.note]
+en = "Variants primary, secondary, danger and ghost; a smaller size; the disabled state."
+cs = "Varianty primární, vedlejší, destruktivní a ghost, menší velikost a neaktivní stav."
+
+[admin.design.buttons.primary]
+en = "Primary action"
+cs = "Primární akce"
+
+[admin.design.buttons.secondary]
+en = "Secondary"
+cs = "Vedlejší"
+
+[admin.design.buttons.danger]
+en = "Destructive"
+cs = "Destruktivní"
+
+[admin.design.buttons.ghost]
+en = "Ghost"
+cs = "Ghost"
+
+[admin.design.buttons.disabled]
+en = "Disabled"
+cs = "Neaktivní"
+
+[admin.design.buttons.add]
+en = "Add"
+cs = "Přidat"
+
+[admin.design.buttons.export]
+en = "Export"
+cs = "Export"
+
+[admin.design.buttons.remove]
+en = "Remove"
+cs = "Odebrat"
+
+[admin.design.badges.badge]
+en = "badge"
+cs = "odznak"
+
+[admin.design.badges.high]
+en = "needs attention"
+cs = "vyžaduje pozornost"
+
+[admin.design.badges.medium]
+en = "notice"
+cs = "upozornění"
+
+[admin.design.badges.low]
+en = "all good"
+cs = "v pořádku"
+
+[admin.design.badges.status_ok]
+en = "published"
+cs = "zveřejněno"
+
+[admin.design.badges.status_progress]
+en = "draft"
+cs = "rozpracováno"
+
+[admin.design.badges.status_warn]
+en = "check"
+cs = "zkontrolovat"
+
+[admin.design.badges.status_planned]
+en = "scheduled"
+cs = "naplánováno"
+
+[admin.design.badges.status_missing]
+en = "missing"
+cs = "chybí"
+
+[admin.design.badges.status_na]
+en = "not applicable"
+cs = "neaplikovatelné"
+
+[admin.design.badges.status_inactive]
+en = "hidden"
+cs = "skryto"
+
+[admin.design.badges.dot_ok]
+en = "running"
+cs = "běží"
+
+[admin.design.badges.dot_warn]
+en = "slow"
+cs = "pomalé"
+
+[admin.design.badges.dot_bad]
+en = "down"
+cs = "nedostupné"
+
+[admin.design.badges.dot_unknown]
+en = "unknown"
+cs = "neznámé"
+
+[admin.design.badges.live]
+en = "live data"
+cs = "živá data"
+
+[admin.design.badges.live_stale]
+en = "paused"
+cs = "pozastaveno"
+
+[admin.design.badges.live_error]
+en = "update failed"
+cs = "aktualizace selhala"
+
+[admin.design.cards.stat_references]
+en = "References"
+cs = "Reference"
+
+[admin.design.cards.stat_enquiries]
+en = "Enquiries this month"
+cs = "Poptávky tento měsíc"
+
+[admin.design.cards.stat_response]
+en = "Response time"
+cs = "Doba odezvy"
+
+[admin.design.cards.published]
+en = "published {count}"
+cs = "zveřejněno {count}"
+
+[admin.design.cards.new_today]
+en = "{count} new today"
+cs = "dnes {count} nové"
+
+[admin.design.cards.healthy]
+en = "healthy"
+cs = "v pořádku"
+
+[admin.design.cards.summary_title]
+en = "Summary card"
+cs = "Karta s přehledem"
+
+[admin.design.cards.name]
+en = "Name"
+cs = "Název"
+
+[admin.design.cards.address]
+en = "Address"
+cs = "Adresa"
+
+[admin.design.cards.module]
+en = "Module"
+cs = "Modul"
+
+[admin.design.cards.info_title]
+en = "Info card"
+cs = "Info karta"
+
+[admin.design.cards.info_text]
+en = "Help, method, an explanation of a feature."
+cs = "Nápověda, postup, vysvětlení funkce."
+
+[admin.design.tables.note]
+en = "data-table (+ --compact). Data in the HTML: class js-datatable. Data from the server: data-source, data-refresh, data-live and renderers on <th data-render>. Values are always escaped."
+cs = "data-table (+ --compact). Data v HTML: třída js-datatable. Data ze serveru: data-source, data-refresh, data-live a renderery na <th data-render>. Hodnoty se vždy escapují."
+
+[admin.design.tables.state]
+en = "State"
+cs = "Stav"
+
+[admin.design.tables.client]
+en = "Client"
+cs = "Klient"
+
+[admin.design.tables.website]
+en = "Website"
+cs = "Web"
+
+[admin.design.tables.photos]
+en = "Photos"
+cs = "Fotky"
+
+[admin.design.tables.detail]
+en = "Detail"
+cs = "Detail"
+
+[admin.design.tables.sample_client]
+en = "Sample client {number}"
+cs = "Ukázkový klient {number}"
+
+[admin.design.dialog.rule]
+en = "A short form (a few fields) opens in a dialog. The page shows read-only values and a button that opens the dialog. A rejected form opens again with the submitted values and the error."
+cs = "Krátký formulář (pár polí) se otevírá v dialogu. Stránka ukazuje hodnoty pro čtení a tlačítko, které dialog otevře. Odmítnutý formulář se otevře znovu s odeslanými hodnotami a chybou."
+
+[admin.design.dialog.open]
+en = "Open the sample dialog"
+cs = "Otevřít ukázkový dialog"
+
+[admin.design.dialog.title]
+en = "Edit reference"
+cs = "Upravit referenci"
+
+[admin.design.dialog.section]
+en = "Basic details"
+cs = "Základní údaje"
+
+[admin.design.dialog.name]
+en = "Client name"
+cs = "Název klienta"
+
+[admin.design.dialog.slug]
+en = "Address (slug)"
+cs = "Adresa (slug)"
+
+[admin.design.dialog.slug_hint]
+en = "Filled in from the name until you change it."
+cs = "Vyplní se z názvu, dokud ji nezměníte."
+
+[admin.design.dialog.url]
+en = "Website URL"
+cs = "Adresa webu"
+
+[admin.design.dialog.url_error]
+en = "Enter the full address, including https://."
+cs = "Zadejte celou adresu včetně https://."
+
+[admin.design.dialog.visibility]
+en = "Visibility"
+cs = "Viditelnost"
+
+[admin.design.dialog.visible]
+en = "Published"
+cs = "Zveřejněno"
+
+[admin.design.dialog.hidden]
+en = "Hidden"
+cs = "Skryto"
+
+[admin.design.dialog.note]
+en = "A note on the left of the dialog footer."
+cs = "Poznámka vlevo v patičce dialogu."
+
+[admin.design.dialog.sample_name]
+en = "Sample joinery"
+cs = "Ukázkové truhlářství"
+
+[admin.design.dialog.tag_wood]
+en = "wood"
+cs = "dřevo"
+
+[admin.design.dialog.tag_kitchen]
+en = "kitchens"
+cs = "kuchyně"
+
+[admin.design.dialog.tag_interior]
+en = "interiors"
+cs = "interiéry"
+
+[admin.design.page.rule]
+en = "A larger form (many fields, uploads, several sections) gets its own page: sections in cards, actions at the bottom. After saving, the page returns to the list or detail."
+cs = "Větší formulář (hodně polí, nahrávání, několik sekcí) má vlastní stránku: sekce v kartách, akce dole. Po uložení se stránka vrátí na seznam nebo detail."
+
+[admin.design.page.section_content]
+en = "Content"
+cs = "Obsah"
+
+[admin.design.page.section_publishing]
+en = "Publishing"
+cs = "Zveřejnění"
+
+[admin.design.page.title_field]
+en = "Title"
+cs = "Nadpis"
+
+[admin.design.page.date]
+en = "Date"
+cs = "Datum"
+
+[admin.design.page.text]
+en = "Text"
+cs = "Text"
+
+[admin.design.page.photos]
+en = "Photos"
+cs = "Fotky"
+
+[admin.design.page.photos_hint]
+en = "JPEG, PNG or WebP, up to 10 MB each."
+cs = "JPEG, PNG nebo WebP, každá nejvýše 10 MB."
+
+[admin.design.page.publish_now]
+en = "Publish now"
+cs = "Zveřejnit hned"
+
+[admin.design.page.publish_now_hint]
+en = "Visitors see it straight away."
+cs = "Návštěvníci ji uvidí okamžitě."
+
+[admin.design.page.publish_draft]
+en = "Save as a draft"
+cs = "Uložit jako koncept"
+
+[admin.design.page.publish_draft_hint]
+en = "Only administrators see it."
+cs = "Uvidí ji jen administrátoři."
+
+[admin.design.page.homepage]
+en = "Show on the home page"
+cs = "Zobrazit na úvodní stránce"
+
+[admin.design.page.newsletter]
+en = "Pin to the top"
+cs = "Připnout nahoru"
+
+[admin.design.page.homepage_hint]
+en = "A switch for a yes/no setting."
+cs = "Přepínač pro nastavení ano/ne."
+
+[admin.design.page.pin_hint]
+en = "Stays first in the list until unpinned."
+cs = "Zůstane v seznamu první, dokud ho neodepnete."
+
+[admin.design.page.categories]
+en = "Show in categories"
+cs = "Zobrazit v kategoriích"
+
+[admin.design.page.archive]
+en = "archive (disabled)"
+cs = "archiv (neaktivní)"
+
+[admin.design.nav.tab_all]
+en = "All"
+cs = "Vše"
+
+[admin.design.nav.tab_published]
+en = "Published"
+cs = "Zveřejněné"
+
+[admin.design.nav.tab_drafts]
+en = "Drafts"
+cs = "Koncepty"
+
+[admin.design.nav.chip_new]
+en = "New"
+cs = "Nové"
+
+[admin.design.nav.chip_answered]
+en = "Answered"
+cs = "Vyřízené"
+
+[admin.design.nav.chip_spam]
+en = "Spam"
+cs = "Spam"
+
+[admin.design.nav.filter_text]
+en = "Search text"
+cs = "Hledaný text"
+
+[admin.design.nav.filter_from]
+en = "From"
+cs = "Od"
+
+[admin.design.nav.filter_state]
+en = "State"
+cs = "Stav"
+
+[admin.design.nav.filter_any]
+en = "any"
+cs = "libovolný"
+
+[admin.design.nav.filter_submit]
+en = "Search"
+cs = "Hledat"
+
+[admin.design.feedback.flash_success]
+en = "Reference saved; it is on the website now."
+cs = "Reference uložena, na webu už je."
+
+[admin.design.feedback.flash_info]
+en = "This enquiry has been answered; it is read-only."
+cs = "Poptávka je vyřízená, údaje jsou jen pro čtení."
+
+[admin.design.feedback.flash_warning]
+en = "The temporary password is shown only now."
+cs = "Dočasné heslo se zobrazí jen teď."
+
+[admin.design.feedback.flash_danger]
+en = "Website URL: enter the full address."
+cs = "Adresa webu: zadejte celou adresu."
+
+[admin.design.feedback.verdict_ok]
+en = "Everything is in order"
+cs = "Vše v pořádku"
+
+[admin.design.feedback.verdict_ok_text]
+en = "A prominent result of a check."
+cs = "Výrazný výsledek kontroly."
+
+[admin.design.feedback.verdict_warn]
+en = "Cannot be determined"
+cs = "Nelze určit"
+
+[admin.design.feedback.verdict_warn_text]
+en = "Some data is missing for a verdict."
+cs = "Pro výsledek chybí část údajů."
+
+[admin.design.feedback.empty]
+en = "There are no records yet."
+cs = "Zatím tu nejsou žádné záznamy."
+
+[admin.design.feedback.empty_hint]
+en = "An empty state with a hint."
+cs = "Prázdný stav s nápovědou."
+
+[admin.design.feedback.confirm_button]
+en = "Confirmation dialog (data-confirm)"
+cs = "Potvrzovací dialog (data-confirm)"
+
+[admin.design.feedback.confirm_text]
+en = "The action runs only after confirmation in the dialog."
+cs = "Akce se provede až po potvrzení v dialogu."
+
+[admin.design.feedback.confirm_title]
+en = "Delete reference?"
+cs = "Smazat referenci?"
+
+[admin.design.feedback.confirm_ok]
+en = "Delete"
+cs = "Smazat"
+
+[admin.design.feedback.tooltip]
+en = "Hover or focus this element"
+cs = "Najeďte myší nebo sem přejděte klávesnicí"
+
+[admin.design.feedback.tooltip_text]
+en = "A tooltip from data-tip"
+cs = "Nápověda z data-tip"
+
+[admin.design.charts.note]
+en = "CSS bar chart; bar heights come from data-height (no inline styles)."
+cs = "Sloupcový graf v CSS, výšky sloupců z data-height (bez inline stylů)."
+
+[admin.design.charts.from]
+en = "12 hours ago"
+cs = "před 12 hodinami"
+
+[admin.design.charts.to]
+en = "now"
+cs = "teď"
+
+[admin.design.languages.note]
+en = "Every admin text comes from a catalogue (translations/*.toml) in the user's language. Switch the language here or in the user menu."
+cs = "Každý text administrace pochází z katalogu (translations/*.toml) v jazyce uživatele. Jazyk přepnete tady nebo v uživatelském menu."
+
+[admin.design.languages.plural]
+en = "Plural forms:"
+cs = "Množná čísla:"
+
+[admin.design.languages.photos]
+en = { one = "{count} photo", other = "{count} photos" }
+cs = { one = "{count} fotka", few = "{count} fotky", other = "{count} fotek" }
+
+[admin.design.rules.csp]
+en = "No inline JavaScript and no inline styles (CSP without unsafe-inline); behaviour lives in admin.js, dynamic sizes go through data-* attributes."
+cs = "Žádný inline JavaScript ani inline styly (CSP bez unsafe-inline), chování je v admin.js, dynamické rozměry jdou přes data-* atributy."
+
+[admin.design.rules.texts]
+en = "No hard-coded texts: templates use t() and tn(), admin.js gets its texts from the page, each module ships its own catalogue."
+cs = "Žádné texty natvrdo: šablony používají t() a tn(), admin.js dostává texty od stránky, každý modul má vlastní katalog."
+
+[admin.design.rules.forms]
+en = "Short forms in a dialog, larger forms on their own page."
+cs = "Krátké formuláře v dialogu, větší formuláře na vlastní stránce."
+
+[admin.design.rules.escape]
+en = "Values from users and the database are untrusted: autoescape in templates, esc() in table renderers."
+cs = "Hodnoty od uživatelů a z databáze jsou nedůvěryhodné: autoescape v šablonách, esc() v rendererech tabulek."
+
+[admin.design.rules.post]
+en = "Searches and data queries go over POST; parameters never in the URL."
+cs = "Vyhledávání a dotazy do dat jen přes POST, parametry nikdy v URL."
+
+[admin.design.rules.compose]
+en = "New screens are composed from the components on this page; a new element comes here first, then into the admin."
+cs = "Nové obrazovky se skládají z komponent této stránky. Nový prvek přijde nejdřív sem, potom do administrace."
+
+# --- Uploads, navigation helpers (2026-10-14) ----------------------------------
+
+[admin.upload.drop_one]
+en = "Drop a file here"
+cs = "Přetáhněte soubor sem"
+
+[admin.upload.drop_many]
+en = "Drop files here"
+cs = "Přetáhněte soubory sem"
+
+[admin.upload.tap_one]
+en = "Tap to choose a file"
+cs = "Klepněte a vyberte soubor"
+
+[admin.upload.tap_many]
+en = "Tap to choose files"
+cs = "Klepněte a vyberte soubory"
+
+[admin.upload.or_choose]
+en = "or click to choose"
+cs = "nebo klikněte a\u00A0vyberte"
+
+[admin.nav.breadcrumbs]
+en = "Where you are"
+cs = "Kde jste"
+
+[admin.nav.pagination]
+en = "Pages"
+cs = "Stránky"
+
+[admin.nav.previous]
+en = "Previous page"
+cs = "Předchozí stránka"
+
+[admin.nav.next]
+en = "Next page"
+cs = "Další stránka"
+
+[admin.js.upload.wrong_type]
+en = "This file type is not allowed."
+cs = "Tento typ souboru není povolený."
+
+[admin.js.upload.too_big]
+en = "Too large, at most {max}."
+cs = "Příliš velký, nejvýše {max}."
+
+[admin.js.upload.remove]
+en = "Remove {name}"
+cs = "Odebrat {name}"
+
+[admin.js.sortable.moved]
+en = "{name} moved to position {position} of {count}."
+cs = "{name} přesunuto na {position}. místo z\u00A0{count}."
+
+[admin.js.sortable.removed]
+en = "{name} removed."
+cs = "{name} odebráno."
+
+[admin.js.counter]
+en = "{used} / {max} characters"
+cs = "{used} / {max} znaků"
+
+[admin.design.section.uploads]
+en = "Uploading files"
+cs = "Nahrávání souborů"
+
+[admin.design.section.ordering]
+en = "Gallery and order"
+cs = "Galerie a\u00A0pořadí"
+
+[admin.design.uploads.note]
+en = "Drop files on the area or click it. Each file uploads at once with a progress bar; the form then sends only the file ids. A wrong type or size is marked and not sent. The server checks everything again: by content, not by name, and photos lose their EXIF data."
+cs = "Soubory přetáhněte na plochu, nebo na ni klikněte. Každý soubor se hned nahraje s ukazatelem průběhu, formulář pak odešle jen jejich čísla. Špatný typ nebo velikost se označí a neodešle. Server vše kontroluje znovu: podle obsahu, ne podle názvu, a fotkám odstraní údaje EXIF."
+
+[admin.design.uploads.logo]
+en = "Logo"
+cs = "Logo"
+
+[admin.design.uploads.logo_hint]
+en = "PNG, JPEG or WebP, up to 2 MB."
+cs = "PNG, JPEG nebo WebP, nejvýše 2\u00A0MB."
+
+[admin.design.uploads.photos]
+en = "Photos of completed work"
+cs = "Fotky realizací"
+
+[admin.design.ordering.note]
+en = "Drag with the mouse, or use the arrows (phone, keyboard). The first photo is the cover."
+cs = "Přetáhněte myší, nebo použijte šipky (telefon, klávesnice). První fotka je titulní."
+
+[admin.design.ordering.photo]
+en = "Photo {number}"
+cs = "Fotka {number}"
+
+[admin.design.ordering.cover]
+en = "Cover"
+cs = "Titulní"
+
+[admin.design.ordering.earlier]
+en = "Move {name} earlier"
+cs = "Posunout {name} dopředu"
+
+[admin.design.ordering.later]
+en = "Move {name} later"
+cs = "Posunout {name} dozadu"
+
+[admin.design.ordering.remove]
+en = "Remove {name}"
+cs = "Odebrat {name}"
+
+[admin.design.ordering.list_title]
+en = "Order of a list (e.g. references)"
+cs = "Pořadí v\u00A0seznamu (např. reference)"
+
+[admin.design.buttons.busy_note]
+en = "A submitted form shows a spinner on its button and cannot be sent twice."
+cs = "Odeslaný formulář ukáže na tlačítku kolečko a\u00A0nejde odeslat dvakrát."
+
+[admin.design.nav.pagination_note]
+en = "Breadcrumbs above nested pages; pagination below server-rendered lists (DataTables pages its own tables)."
+cs = "Drobečková navigace nad vnořenými stránkami, stránkování pod seznamy vykreslenými na serveru (DataTables stránkuje své tabulky samo)."
+
+[admin.design.feedback.disclosure_q1]
+en = "Collapsible section (details)"
+cs = "Rozbalovací sekce (details)"
+
+[admin.design.feedback.disclosure_a1]
+en = "For help texts and answers that most people do not need to see all the time."
+cs = "Pro nápovědy a\u00A0odpovědi, které většina lidí nepotřebuje vidět pořád."
+
+[admin.design.feedback.disclosure_q2]
+en = "Works without JavaScript"
+cs = "Funguje i\u00A0bez JavaScriptu"
+
+[admin.design.feedback.disclosure_a2]
+en = "It is a native HTML element: keyboard and screen readers work out of the box."
+cs = "Je to nativní prvek HTML: klávesnice i\u00A0čtečky obrazovky fungují samy."
+
+[admin.design.page.description]
+en = "Description for search engines"
+cs = "Popis pro vyhledávače"
+
+[admin.design.page.description_hint]
+en = "A sentence or two shown under the title in search results."
+cs = "Věta nebo dvě, které se ukážou pod nadpisem ve výsledcích vyhledávání."
+
+# --- Background uploads and the editor (2026-10-15) -----------------------------
+
+[admin.js.upload.uploading]
+en = "Uploading… {percent} %"
+cs = "Nahrávám… {percent} %"
+
+[admin.js.upload.queued]
+en = "Waiting to upload…"
+cs = "Čeká na nahrání…"
+
+[admin.js.upload.processing]
+en = "Processing…"
+cs = "Zpracovávám…"
+
+[admin.js.upload.failed]
+en = "The upload failed. Try again."
+cs = "Nahrání se nepovedlo. Zkuste to znovu."
+
+[admin.js.upload.wait]
+en = "Wait until all files are uploaded."
+cs = "Počkejte, až se nahrají všechny soubory."
+
+[admin.js.editor.toolbar]
+en = "Text formatting"
+cs = "Formátování textu"
+
+[admin.js.editor.heading]
+en = "Heading"
+cs = "Nadpis"
+
+[admin.js.editor.subheading]
+en = "Subheading"
+cs = "Podnadpis"
+
+[admin.js.editor.paragraph]
+en = "Paragraph"
+cs = "Odstavec"
+
+[admin.js.editor.bold]
+en = "Bold"
+cs = "Tučně"
+
+[admin.js.editor.link]
+en = "Link"
+cs = "Odkaz"
+
+[admin.js.editor.unlink]
+en = "Remove link"
+cs = "Zrušit odkaz"
+
+[admin.js.editor.bullets]
+en = "Bulleted list"
+cs = "Odrážky"
+
+[admin.js.editor.numbers]
+en = "Numbered list"
+cs = "Číslovaný seznam"
+
+[admin.js.editor.link_prompt]
+en = "Link address (a website, mailto: or tel:)"
+cs = "Adresa odkazu (web, mailto: nebo tel:)"
+
+[admin.design.uploads.document]
+en = "Documents"
+cs = "Dokumenty"
+
+[admin.design.uploads.document_hint]
+en = "PDF, up to 20 MB each."
+cs = "PDF, každý nejvýše 20\u00A0MB."
+
+[admin.design.page.editor_hint]
+en = "Headings, bold, links and lists. Pasted text loses its formatting; the website's design decides how it looks."
+cs = "Nadpisy, tučné písmo, odkazy a seznamy. Vložený text ztratí formátování, vzhled určí design webu."
+
+[admin.design.page.text_sample]
+en = "<h2>Fitted kitchens</h2><p>We build them from <strong>solid wood</strong> and laminate.</p><ul><li>free measuring</li><li>fitting within 6 weeks</li></ul>"
+cs = "<h2>Kuchyně na míru</h2><p>Vyrábíme je z\u00A0<strong>masivu</strong> i\u00A0lamina.</p><ul><li>zaměření zdarma</li><li>montáž do 6\u00A0týdnů</li></ul>"

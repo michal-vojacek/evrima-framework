@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "minimal-site",
+      "runtimeExecutable": ".venv/Scripts/flask.exe",
+      "runtimeArgs": ["--app", "examples/minimal/minimal_site", "run", "--port", "5050", "--reload"],
+      "port": 5050
+    },
+    {
+      "name": "demo",
+      "runtimeExecutable": ".venv/Scripts/flask.exe",
+      "runtimeArgs": ["--app", "examples/minimal/minimal_site", "run", "--port", "5000", "--reload"],
+      "port": 5000
+    }
+  ]
+}

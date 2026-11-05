@@ -1,0 +1,207 @@
+{#- Shared building blocks of admin pages, taken over from an earlier admin design
+    system. Every visible text either comes in as an argument (already
+    translated by the caller) or from the catalogue via t(). -#}
+
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
+
+{% macro page_header(title, subtitle=None, icon=None) %}
+<div class="page-header">
+  <div>
+    <h1>{% if icon %}<i class="fa-solid fa-{{ icon }}"></i> {% endif %}{{ title }}</h1>
+    {% if subtitle %}<div class="muted">{{ subtitle }}</div>{% endif %}
+  </div>
+  {% if caller is defined %}<div class="actions-bar">{{ caller() }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{#- Required fields carry a visible asterisk and a screen-reader word. -#}
+{% macro required_mark(required) %}{% if required %} <span class="muted" aria-hidden="true">*</span><span class="sr-only">({{ t("admin.common.required") }})</span>{% endif %}{% endmacro %}
+
+{#- Field ids are "f-<prefix><name>". Pages with several forms (one dialog per
+    record, password and TOTP dialogs side by side) pass a `prefix` per form,
+    so every label points at its own field.
+    `attrs` is a dict of extra attributes, rendered escaped (never raw HTML). -#}
+{% macro field(name, label, value='', type='text', hint=None, required=False, placeholder='', attrs={}, readonly=False, invalid=None, cls='', prefix='') %}
+{%- set fid = "f-" ~ prefix ~ name -%}
+<div class="field">
+  <label for="{{ fid }}">{{ label }}{{ required_mark(required) }}</label>
+  <input class="input {{ cls }} {{ 'is-invalid' if invalid }}" type="{{ type }}" id="{{ fid }}" name="{{ name }}"
+         value="{{ value if value is not none else '' }}" placeholder="{{ placeholder }}"
+         {{ 'required' if required }} {{ 'readonly' if readonly }} {{ attrs | xmlattr }}
+         {% if invalid %}aria-invalid="true" aria-describedby="{{ fid }}-error"{% endif %}>
+  {% if invalid %}<p class="field__feedback field__feedback--bad" id="{{ fid }}-error">{{ invalid }}</p>{% endif %}
+  {% if hint %}<p class="field__hint">{{ hint }}</p>{% endif %}
+</div>
+{% endmacro %}
+
+{#- maxlength adds a "used / max" counter under the field (admin.js). -#}
+{% macro textarea(name, label, value='', rows=3, hint=None, required=False, placeholder='', prefix='', maxlength=None) %}
+{%- set fid = "f-" ~ prefix ~ name -%}
+<div class="field">
+  <label for="{{ fid }}">{{ label }}{{ required_mark(required) }}</label>
+  <textarea class="input" id="{{ fid }}" name="{{ name }}" rows="{{ rows }}" placeholder="{{ placeholder }}" {{ 'required' if required }}
+            {% if maxlength %}maxlength="{{ maxlength }}" data-counter{% endif %}>{{ value if value is not none else '' }}</textarea>
+  {% if hint %}<p class="field__hint">{{ hint }}</p>{% endif %}
+</div>
+{% endmacro %}
+
+{#- options: [(value, label)] -#}
+{% macro select(name, label, options, value='', hint=None, prefix='') %}
+{%- set fid = "f-" ~ prefix ~ name -%}
+<div class="field">
+  <label for="{{ fid }}">{{ label }}</label>
+  <select class="input" id="{{ fid }}" name="{{ name }}">
+    {% for v, l in options %}<option value="{{ v }}" {{ 'selected' if v|string == value|string }}>{{ l }}</option>{% endfor %}
+  </select>
+  {% if hint %}<p class="field__hint">{{ hint }}</p>{% endif %}
+</div>
+{% endmacro %}
+
+{#- === Dialogs: short forms open in a <dialog>. ===
+    A rejected form reopens after the redirect with the submitted values and
+    the error (modal_state, evrima/admin/modal.py). -#}
+{% macro modal(id, title, icon=None, size='') %}
+{% set reopened = modal_state.get('id') == id %}
+<dialog class="modal modal--form {{ 'modal--' ~ size if size }}" id="{{ id }}" aria-labelledby="{{ id }}-title" {{ 'data-autoopen' if reopened }}>
+  <div class="modal__box">
+    <div class="modal__head">
+      <h2 class="modal__title" id="{{ id }}-title">{% if icon %}<i class="fa-solid fa-{{ icon }}"></i>{% endif %}<span data-modal-title>{{ title }}</span></h2>
+      <button type="button" class="modal__close" data-modal-close aria-label="{{ t('admin.common.close') }}"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    {{ caller(reopened) }}
+  </div>
+</dialog>
+{% endmacro %}
+
+{% macro modal_error(id) %}
+{% if modal_state.get('id') == id and modal_state.get('error') %}<div class="modal__error" role="alert"><i class="fa-solid fa-circle-exclamation"></i><div>{{ modal_state.error }}</div></div>{% endif %}
+{% endmacro %}
+
+{#- Field value: after a rejected submit the submitted one, otherwise the default. -#}
+{% macro mv(id, name, default='') -%}
+{%- if modal_state.get('id') == id and name in modal_state.get('form', {}) -%}{{ modal_state.form[name] }}{%- else -%}{{ default if default is not none else '' }}{%- endif -%}
+{%- endmacro %}
+
+{% macro modal_actions(submit=None, icon='floppy-disk', note=None, danger=False) %}
+<div class="modal__actions">
+  {% if note %}<span class="modal__note">{{ note }}</span>{% endif %}
+  <button type="button" class="btn btn--ghost" data-modal-close>{{ t("admin.common.cancel") }}</button>
+  <button type="submit" class="btn {{ 'btn--danger' if danger else 'btn--primary' }}"><i class="fa-solid fa-{{ icon }}"></i> {{ submit or t("admin.common.save") }}</button>
+</div>
+{% endmacro %}
+
+{% macro open_button(target, label, icon='plus', cls='btn--primary', fill=None, title=None) %}
+<button type="button" class="btn {{ cls }} btn--small" data-modal="{{ target }}"{% if fill is not none %} data-fill="{{ fill | tojson | forceescape }}"{% endif %}{% if title %} data-modal-title="{{ title }}"{% endif %}><i class="fa-solid fa-{{ icon }}"></i> {{ label }}</button>
+{% endmacro %}
+
+{#- === Larger forms: their own page. ===
+    Sections are cards; the actions sit at the bottom, Cancel left of Save. -#}
+{% macro page_form_actions(cancel_url, submit=None, icon='floppy-disk') %}
+<div class="page-form__actions">
+  <a class="btn btn--ghost" href="{{ cancel_url }}">{{ t("admin.common.cancel") }}</a>
+  <button type="submit" class="btn btn--primary"><i class="fa-solid fa-{{ icon }}"></i> {{ submit or t("admin.common.save") }}</button>
+</div>
+{% endmacro %}
+
+{% macro tag_pill(tag) %}<span class="tag tag--{{ tag.color }}"><i class="fa-solid fa-{{ tag.icon }}"></i>{{ tag.name }}</span>{% endmacro %}
+
+{% macro tag_pills(pills) %}{% if pills %}<span class="tags">{% for tag in pills %}{{ tag_pill(tag) }}{% endfor %}</span>{% else %}<span class="muted">{{ t("admin.common.empty_value") }}</span>{% endif %}{% endmacro %}
+
+{#- Tag picker: chips plus suggestions of existing tags and "new". Submits a repeated field `name`. -#}
+{% macro tag_picker(name, selected, tags, label=None, hint=None) %}
+<div class="field">
+  <label for="f-{{ name }}-input">{{ label or t("admin.forms.tags_label") }}</label>
+  <div class="tag-picker" data-tag-picker data-field="{{ name }}" data-name="{{ name }}"
+       data-options="{{ tags | tojson | forceescape }}"
+       data-selected="{{ (selected or []) | list | tojson | forceescape }}">
+    <input class="tag-picker__input" id="f-{{ name }}-input" type="text" autocomplete="off"
+           placeholder="{{ t('admin.forms.tags_placeholder') }}" aria-label="{{ label or t('admin.forms.tags_label') }}">
+  </div>
+  {% if hint %}<p class="field__hint">{{ hint }}</p>{% endif %}
+</div>
+{% endmacro %}
+
+{#- File upload: a drop zone around a native file input; admin.js lists the
+    chosen files with previews and checks type and size.
+
+    background=True (the usual way): each file is uploaded at once to
+    /admin/media/upload with a progress bar, and the form submits only the
+    file ids under `name` (one value per file). The module that saves the
+    form claims them with evrima.media.take() (one file) or evrima.media.claim(). `files` lists files stored
+    earlier (dicts from evrima.media.views.describe), shown when editing.
+    background=False: the files go with the form (enctype="multipart/form-data").
+    `kinds`: "image", "document" or "image,document". The server checks again. -#}
+{% macro upload(name, label, multiple=False, accept='image/jpeg,image/png,image/webp', max_bytes=10485760, hint=None, prefix='', background=True, kinds='image', files=[]) %}
+{%- set fid = "f-" ~ prefix ~ name -%}
+<div class="field upload" data-upload data-max-size="{{ max_bytes }}" data-name="{{ name }}" data-kinds="{{ kinds }}"
+     {% if background %}data-upload-url="{{ url_for('evrima_media_admin.upload') }}" data-files="{{ files | tojson | forceescape }}"{% endif %}>
+  <span class="field__label" id="{{ fid }}-label">{{ label }}</span>
+  <input class="upload__input" type="file" id="{{ fid }}" name="{{ name }}" accept="{{ accept }}"
+         {{ 'multiple' if multiple }} aria-labelledby="{{ fid }}-label {{ fid }}-zone">
+  <label class="upload__zone" for="{{ fid }}" id="{{ fid }}-zone">
+    <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
+    <strong class="upload__drop">{{ t("admin.upload.drop_many" if multiple else "admin.upload.drop_one") }}</strong>
+    <strong class="upload__tap">{{ t("admin.upload.tap_many" if multiple else "admin.upload.tap_one") }}</strong>
+    <span class="upload__or">{{ t("admin.upload.or_choose") }}</span>
+    {% if hint %}<span class="muted small">{{ hint }}</span>{% endif %}
+  </label>
+  <ul class="upload__list" hidden></ul>
+</div>
+{% endmacro %}
+
+{#- Rich text: a textarea that admin.js turns into the minimal editor
+    (headings, bold, links, lists). The value is cleaned before it is put
+    in the field; the server cleans what comes back (evrima.editor). -#}
+{% macro editor(name, label, value='', hint=None, required=False, prefix='', rows=8) %}
+{%- set fid = "f-" ~ prefix ~ name -%}
+<div class="field">
+  <label for="{{ fid }}">{{ label }}{{ required_mark(required) }}</label>
+  <textarea class="input" id="{{ fid }}" name="{{ name }}" rows="{{ rows }}" data-editor
+            {{ 'required' if required }}{% if hint %} aria-describedby="{{ fid }}-hint"{% endif %}>{{ sanitize_html(value) }}</textarea>
+  {% if hint %}<p class="field__hint" id="{{ fid }}-hint">{{ hint }}</p>{% endif %}
+</div>
+{% endmacro %}
+
+{#- Breadcrumbs above the page header of nested pages.
+    items: [(label, url)]; the last item is the current page (url ignored). -#}
+{% macro breadcrumbs(items) %}
+<nav class="breadcrumbs" aria-label="{{ t('admin.nav.breadcrumbs') }}">
+  <ol>
+    {% for label, url in items %}
+    <li>{% if loop.last %}<span aria-current="page">{{ label }}</span>{% else %}<a href="{{ url }}">{{ label }}</a>{% endif %}</li>
+    {% endfor %}
+  </ol>
+</nav>
+{% endmacro %}
+
+{#- Pagination of a server-rendered list. `url` is a callable page -> URL,
+    e.g. url=lambda n: url_for('news.index', page=n) passed from the view. -#}
+{% macro pagination(page, pages, url) %}
+{% if pages > 1 %}
+<nav class="pagination" aria-label="{{ t('admin.nav.pagination') }}">
+  <ul>
+    <li>{% if page > 1 %}<a href="{{ url(page - 1) }}" rel="prev" aria-label="{{ t('admin.nav.previous') }}">‹</a>{% else %}<span class="is-disabled" aria-hidden="true">‹</span>{% endif %}</li>
+    {% for n in range(1, pages + 1) %}
+      {% if n == 1 or n == pages or (n >= page - 2 and n <= page + 2) %}
+      <li>{% if n == page %}<span aria-current="page">{{ n }}</span>{% else %}<a href="{{ url(n) }}">{{ n }}</a>{% endif %}</li>
+      {% elif n == page - 3 or n == page + 3 %}
+      <li><span class="pagination__gap" aria-hidden="true">…</span></li>
+      {% endif %}
+    {% endfor %}
+    <li>{% if page < pages %}<a href="{{ url(page + 1) }}" rel="next" aria-label="{{ t('admin.nav.next') }}">›</a>{% else %}<span class="is-disabled" aria-hidden="true">›</span>{% endif %}</li>
+  </ul>
+</nav>
+{% endif %}
+{% endmacro %}
+
+{#- One flash message. The icon carries the type too, so it does not rest on
+    colour alone. Category "error" is shown as "danger". -#}
+{% macro flash_item(category, message) %}
+{%- set kind = 'danger' if category == 'error' else (category if category in ('success', 'info', 'warning', 'danger') else 'info') -%}
+{%- set icon = {'success': 'circle-check', 'info': 'circle-info', 'warning': 'triangle-exclamation', 'danger': 'circle-exclamation'}[kind] -%}
+<li class="flash--{{ kind }}"><i class="fa-solid fa-{{ icon }} flash__icon" aria-hidden="true"></i><span>{{ message }}</span></li>
+{%- endmacro %}
+
+{% macro empty(text, hint=None) %}
+<div class="empty-state"><p>{{ text }}</p>{% if hint %}<p class="muted small">{{ hint }}</p>{% endif %}</div>
+{% endmacro %}

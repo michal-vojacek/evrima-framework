@@ -1,0 +1,20 @@
+{#- Framework fallback error page. Deliberately plain: no stylesheet, no
+    script, so it renders even when static files or the database are the
+    cause of the error. Websites override it with errors/<code>.html or
+    errors/error.html in their own templates. -#}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>{{ error.code }} {{ error.name }}</title>
+</head>
+<body>
+  <main>
+    <h1>{{ error.code }} {{ error.name }}</h1>
+    <p>{{ error.description }}</p>
+    <p><a href="/">Home page</a></p>
+  </main>
+</body>
+</html>

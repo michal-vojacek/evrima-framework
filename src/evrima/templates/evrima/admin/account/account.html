@@ -1,0 +1,100 @@
+{#- My account: profile, password, trusted devices, authenticator app.
+    Short forms open in dialogs (evrima/admin/_macros.html, modal). -#}
+{% extends "evrima/admin/base.html" %}
+{% from "evrima/admin/_macros.html" import page_header, field, select, csrf, modal, modal_error, modal_actions, mv, open_button %}
+{% block title %}{{ t("auth.account.title") }}{% endblock %}
+{% block content %}
+{{ page_header(t("auth.account.title"), t("auth.account.subtitle"), "user-gear") }}
+
+<div class="grid-2">
+  <section class="card">
+    <h2>{{ t("auth.account.profile") }}</h2>
+    <dl class="facts">
+      <dt>{{ t("auth.account.name") }}</dt><dd>{{ me.name or t("admin.common.empty_value") }}</dd>
+      <dt>{{ t("auth.account.email") }}</dt><dd>{{ me.email }}</dd>
+      <dt>{{ t("auth.account.language") }}</dt><dd>{{ languages[me.language] }}</dd>
+    </dl>
+    <p class="muted small mt-1 mb-0">{{ t("auth.account.email_hint") }}</p>
+    <div class="card__footer">{{ open_button("profile-form", t("auth.account.edit_profile"), icon="pen", cls="btn--secondary") }}</div>
+  </section>
+
+  <section class="card">
+    <h2>{{ t("auth.account.security") }}</h2>
+    <dl class="facts">
+      <dt>{{ t("auth.account.password_changed_at") }}</dt>
+      <dd>{% if me.password_changed_at %}<time class="dt" datetime="{{ me.password_changed_at.isoformat() }}Z">{{ me.password_changed_at.strftime('%Y-%m-%d %H:%M') }}</time>{% else %}{{ t("auth.account.never") }}{% endif %}</dd>
+      <dt>{{ t("auth.account.devices") }}</dt><dd>{{ tn("auth.account.devices_count", devices) }}</dd>
+    </dl>
+    <p class="muted small mt-1 mb-0">{{ t("auth.account.devices_hint") }}</p>
+    <div class="card__footer">
+      {{ open_button("password-form", t("auth.account.change_password"), icon="key", cls="btn--secondary") }}
+      <form method="post" action="{{ url_for('evrima_account.logout_everywhere') }}" class="inline-form"
+            data-confirm="{{ t('auth.account.logout_everywhere_confirm') }}"
+            data-confirm-title="{{ t('auth.account.logout_everywhere') }}">
+        {{ csrf() }}
+        <button type="submit" class="btn btn--ghost btn--small"><i class="fa-solid fa-right-from-bracket"></i> {{ t("auth.account.logout_everywhere") }}</button>
+      </form>
+    </div>
+  </section>
+</div>
+
+<section class="card">
+  <h2>{{ t("auth.totp.title") }}
+    {% if me.totp_enabled %}<span class="status status--ok">{{ t("auth.totp.on") }}</span>
+    {% else %}<span class="status status--na">{{ t("auth.totp.off") }}</span>{% endif %}
+  </h2>
+  <p class="muted">{{ t("auth.totp.explain") }}</p>
+  <div class="card__footer">
+    {% if me.totp_enabled %}
+      {{ open_button("totp-disable-form", t("auth.totp.disable"), icon="power-off", cls="btn--danger") }}
+    {% else %}
+      <a class="btn btn--primary btn--small" href="{{ url_for('evrima_account.totp_setup') }}"><i class="fa-solid fa-mobile-screen"></i> {{ t("auth.totp.enable") }}</a>
+    {% endif %}
+  </div>
+</section>
+
+{% call(reopened) modal("profile-form", t("auth.account.edit_profile"), "pen") %}
+<form method="post" action="{{ url_for('evrima_account.save_profile') }}">
+  {{ csrf() }}
+  <div class="modal__content">
+    {{ modal_error("profile-form") }}
+    {{ field("name", t("auth.account.name"), mv("profile-form", "name", me.name), attrs={"autocomplete": "name"}, prefix="profile-") }}
+    {{ select("language", t("auth.account.language"), languages.items() | list, me.language, prefix="profile-") }}
+  </div>
+  {{ modal_actions() }}
+</form>
+{% endcall %}
+
+{#- Passwords are never put back into a reopened form (modal.reopen with form={}). -#}
+{% call(reopened) modal("password-form", t("auth.account.change_password"), "key") %}
+<form method="post" action="{{ url_for('evrima_account.change_password') }}">
+  {{ csrf() }}
+  <div class="modal__content">
+    {{ modal_error("password-form") }}
+    <input type="email" name="username" value="{{ me.email }}" autocomplete="username" hidden>
+    {{ field("current", t("auth.account.current_password"), type="password", required=True, attrs={"autocomplete": "current-password"}, prefix="pw-") }}
+    <div class="form-row">
+      {{ field("password", t("auth.set_password.password"), type="password", required=True, attrs={"autocomplete": "new-password", "minlength": 12}, prefix="pw-") }}
+      {{ field("confirm", t("auth.set_password.confirm"), type="password", required=True, attrs={"autocomplete": "new-password", "minlength": 12}, prefix="pw-") }}
+    </div>
+  </div>
+  {{ modal_actions(note=t("auth.password.too_short")) }}
+</form>
+{% endcall %}
+
+{% if me.totp_enabled %}
+{% call(reopened) modal("totp-disable-form", t("auth.totp.disable"), "power-off") %}
+<form method="post" action="{{ url_for('evrima_account.totp_disable') }}">
+  {{ csrf() }}
+  <div class="modal__content">
+    {{ modal_error("totp-disable-form") }}
+    <p class="muted">{{ t("auth.totp.disable_note") }}</p>
+    <input type="email" name="username" value="{{ me.email }}" autocomplete="username" hidden>
+    {{ field("password", t("auth.login.password"), type="password", required=True, attrs={"autocomplete": "current-password"}, prefix="totp-") }}
+    {{ field("code", t("auth.totp.code"), required=True, attrs={"inputmode": "numeric", "autocomplete": "one-time-code", "maxlength": 7}, cls="mono", prefix="totp-") }}
+  </div>
+  {{ modal_actions(submit=t("auth.totp.disable"), icon="power-off", danger=True) }}
+</form>
+{% endcall %}
+{% endif %}
+{% endblock %}

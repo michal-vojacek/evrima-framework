@@ -1,0 +1,4 @@
+# A website's own catalogue, loaded next to the framework's.
+[site.greeting]
+en = "Hello"
+cs = "Ahoj"

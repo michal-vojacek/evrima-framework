@@ -1,0 +1,18 @@
+{% extends "evrima/admin/auth/base.html" %}
+{% from "evrima/admin/_macros.html" import field, csrf %}
+{% block title %}{{ t("auth.login.title") }}{% endblock %}
+{% block content %}
+<h1>{{ t("auth.login.title") }}</h1>
+<p class="muted">{{ t("auth.login.intro", site=request.host.split(':')[0]) }}</p>
+{% if error %}<div class="modal__error" role="alert"><i class="fa-solid fa-circle-exclamation"></i><div>{{ error }}</div></div>{% endif %}
+<form method="post" action="{{ url_for('evrima_auth.login') }}">
+  {{ csrf() }}
+  <input type="hidden" name="next" value="{{ next }}">
+  {{ field("email", t("auth.login.email"), email, type="email", required=True,
+           attrs={"autocomplete": "username", "autofocus": True}) }}
+  {{ field("password", t("auth.login.password"), type="password", required=True,
+           attrs={"autocomplete": "current-password"}) }}
+  <button class="btn btn--primary" type="submit">{{ t("auth.login.submit") }}</button>
+</form>
+<p class="auth-alt"><a href="{{ url_for('evrima_auth.forgot_password') }}">{{ t("auth.login.forgot") }}</a></p>
+{% endblock %}

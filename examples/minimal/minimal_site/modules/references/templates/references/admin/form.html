@@ -1,0 +1,57 @@
+{#- Add or edit a reference: a larger form on its own page. After a rejected
+    submit the page shows the typed values and the problem at each field. -#}
+{% extends "evrima/admin/base.html" %}
+{% from "evrima/admin/_macros.html" import page_header, breadcrumbs, field, editor, upload, csrf, page_form_actions %}
+{% set title = t("references.edit_title", name=reference.client_name) if reference else t("references.new_title") %}
+{% set e = form.errors %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+{{ breadcrumbs([(t("references.title"), url_for('references_admin.index')), (title, None)]) }}
+{{ page_header(title, None, "handshake") }}
+
+<form class="page-form" method="post"
+      action="{{ url_for('references_admin.edit', reference_id=reference.id) if reference else url_for('references_admin.new') }}">
+  {{ csrf() }}
+  <fieldset class="form-section">
+    <legend>{{ t("references.section.client") }}</legend>
+    <div class="form-row">
+      {{ field("client_name", t("references.client_name"), form.client_name, required=True,
+               attrs={"maxlength": 200, "autocomplete": "off"}, invalid=(t(e.client_name) if "client_name" in e else None)) }}
+      {{ field("website_url", t("references.website_url"), form.website_url, placeholder="https://",
+               attrs={"inputmode": "url", "maxlength": 500, "autocomplete": "off"}, hint=t("references.website_url_hint"),
+               invalid=(t(e.website_url) if "website_url" in e else None)) }}
+    </div>
+  </fieldset>
+
+  <fieldset class="form-section">
+    <legend>{{ t("references.section.project") }}</legend>
+    {{ editor("description", t("references.description"), form.description, hint=t("references.description_hint")) }}
+    {{ upload("image", t("references.image"), hint=t("references.image_hint"), files=files) }}
+    {% if "image" in e %}<p class="field__feedback field__feedback--bad" role="alert">{{ t(e.image) }}</p>{% endif %}
+  </fieldset>
+
+  <fieldset class="form-section">
+    <legend>{{ t("references.section.consent") }}</legend>
+    <p class="muted small">{{ t("references.consent_note") }}</p>
+    <div class="form-row">
+      {{ field("consent_on", t("references.consent_on"), form.consent_on_text, type="date",
+               invalid=(t(e.consent_on) if "consent_on" in e else None)) }}
+      {{ field("consent_proof", t("references.consent_proof"), form.consent_proof,
+               placeholder=t("references.consent_proof_placeholder"), attrs={"maxlength": 500},
+               invalid=(t(e.consent_proof) if "consent_proof" in e else None)) }}
+    </div>
+  </fieldset>
+
+  <fieldset class="form-section">
+    <legend>{{ t("references.section.publishing") }}</legend>
+    <ul class="switch-list">
+      <li><label><input type="checkbox" class="switch" role="switch" name="published" {{ 'checked' if form.published }}
+                        {% if "published" in e %}aria-invalid="true" aria-describedby="f-published-error"{% endif %}>
+        <span>{{ t("references.published") }}<span class="muted small">{{ t("references.published_hint") }}</span></span></label></li>
+    </ul>
+    {% if "published" in e %}<p class="field__feedback field__feedback--bad" id="f-published-error">{{ t(e.published) }}</p>{% endif %}
+  </fieldset>
+
+  {{ page_form_actions(url_for('references_admin.index')) }}
+</form>
+{% endblock %}

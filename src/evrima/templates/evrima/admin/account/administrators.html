@@ -1,0 +1,116 @@
+{#- Everyone who can log in. One role: everyone may invite and remove others,
+    nobody can remove themselves. -#}
+{% extends "evrima/admin/base.html" %}
+{% from "evrima/admin/_macros.html" import page_header, field, select, csrf, modal, modal_error, modal_actions, mv, open_button, empty %}
+{% block title %}{{ t("auth.admins.title") }}{% endblock %}
+{% block content %}
+{% call page_header(t("auth.admins.title"), t("auth.admins.subtitle"), "users-gear") %}
+  {{ open_button("invite-form", t("auth.admins.invite"), icon="user-plus") }}
+{% endcall %}
+
+<section class="card">
+  {% if people %}
+  <div class="table-scroll">
+    <table class="data-table data-table--stack">
+      <thead><tr>
+        <th>{{ t("auth.admins.person") }}</th>
+        <th>{{ t("auth.admins.state") }}</th>
+        <th>{{ t("auth.totp.title") }}</th>
+        <th>{{ t("auth.admins.last_login") }}</th>
+        <th><span class="sr-only">{{ t("auth.admins.actions") }}</span></th>
+      </tr></thead>
+      <tbody>
+      {% for person in people %}
+        <tr>
+          <td data-label=""><strong>{{ person.display_name }}</strong>
+            {% if person.id == me.id %} <span class="badge">{{ t("auth.admins.you") }}</span>{% endif %}
+            {% if person.name %}<br><span class="muted small">{{ person.email }}</span>{% endif %}</td>
+          <td data-label="{{ t('auth.admins.state') }}">{% if person.is_invited %}<span class="status status--planned">{{ t("auth.admins.invited") }}</span>
+              {% else %}<span class="status status--ok">{{ t("auth.admins.active") }}</span>{% endif %}</td>
+          <td data-label="{{ t('auth.totp.title') }}">{{ t("auth.totp.on") if person.totp_enabled else t("auth.totp.off") }}</td>
+          <td data-label="{{ t('auth.admins.last_login') }}">{% if person.last_login_at %}<time class="dt" datetime="{{ person.last_login_at.isoformat() }}Z">{{ person.last_login_at.strftime('%Y-%m-%d %H:%M') }}</time>{% else %}<span class="muted">{{ t("auth.account.never") }}</span>{% endif %}</td>
+          <td class="actions">
+            {{ open_button("edit-" ~ person.id, t("auth.admins.edit"), icon="pen", cls="btn--secondary") }}
+            {% if not person.is_invited and person.id != me.id %}
+            <form method="post" action="{{ url_for('evrima_account.send_reset', person_id=person.id) }}" class="inline-form"
+                  data-confirm="{{ t('auth.admins.reset_confirm', email=person.email) }}"
+                  data-confirm-title="{{ t('auth.admins.reset') }}"
+                  data-confirm-ok="{{ t('auth.admins.reset_send') }}">
+              {{ csrf() }}<button type="submit" class="btn btn--ghost btn--small"><i class="fa-solid fa-key"></i> {{ t("auth.admins.reset") }}</button>
+            </form>
+            {% endif %}
+            {% if person.is_invited %}
+            <form method="post" action="{{ url_for('evrima_account.resend_invite', person_id=person.id) }}" class="inline-form">
+              {{ csrf() }}<button type="submit" class="btn btn--ghost btn--small"><i class="fa-solid fa-paper-plane"></i> {{ t("auth.admins.resend") }}</button>
+            </form>
+            {% endif %}
+            {% if person.id != me.id %}
+            <form method="post" action="{{ url_for('evrima_account.remove', person_id=person.id) }}" class="inline-form"
+                  data-confirm="{{ t('auth.admins.remove_confirm', email=person.email) }}"
+                  data-confirm-title="{{ t('auth.admins.remove_title') }}"
+                  data-confirm-ok="{{ t('auth.admins.remove') }}">
+              {{ csrf() }}<button type="submit" class="btn btn--danger btn--small"><i class="fa-solid fa-user-minus"></i> {{ t("auth.admins.remove") }}</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  {{ empty(t("auth.admins.empty")) }}
+  {% endif %}
+</section>
+
+{#- One edit dialog per person: few administrators, and each dialog can differ
+    (no own e-mail or password change: the account page handles those). Passwords
+    are never put back into a reopened dialog. -#}
+{% for person in people %}
+{% set dialog = "edit-" ~ person.id %}
+{% call(reopened) modal(dialog, t("auth.admins.edit_title", email=person.email), "pen") %}
+<form method="post" action="{{ url_for('evrima_account.edit', person_id=person.id) }}">
+  {{ csrf() }}
+  <div class="modal__content">
+    {{ modal_error(dialog) }}
+    <div class="form-row">
+      {{ field("name", t("auth.account.name"), mv(dialog, "name", person.name), prefix=dialog ~ "-") }}
+      {{ select("language", t("auth.account.language"), languages.items() | list, mv(dialog, "language", person.language), prefix=dialog ~ "-") }}
+    </div>
+    {% if person.id == me.id %}
+      {{ field("email", t("auth.account.email"), person.email, type="email", readonly=True, hint=t("auth.admins.own_email_hint"), prefix=dialog ~ "-") }}
+    {% else %}
+      {{ field("email", t("auth.account.email"), mv(dialog, "email", person.email), type="email", required=True,
+               attrs={"autocomplete": "off"}, hint=t("auth.admins.email_hint_invited" if person.is_invited else "auth.admins.email_hint"), prefix=dialog ~ "-") }}
+    {% endif %}
+    <div class="modal__section">{{ t("auth.admins.new_password") }}</div>
+    {% if person.id == me.id %}
+    <p class="muted small"><a href="{{ url_for('evrima_account.account') }}">{{ t("auth.admins.own_password_hint") }}</a></p>
+    {% else %}
+    <p class="muted small">{{ t("auth.admins.new_password_hint") }}</p>
+    <div class="form-row">
+      {{ field("password", t("auth.set_password.password"), type="password", attrs={"autocomplete": "new-password", "minlength": 12}, prefix=dialog ~ "-") }}
+      {{ field("confirm", t("auth.set_password.confirm"), type="password", attrs={"autocomplete": "new-password", "minlength": 12}, prefix=dialog ~ "-") }}
+    </div>
+    {% endif %}
+  </div>
+  {{ modal_actions() }}
+</form>
+{% endcall %}
+{% endfor %}
+
+{% call(reopened) modal("invite-form", t("auth.admins.invite_title"), "user-plus") %}
+<form method="post" action="{{ url_for('evrima_account.invite') }}">
+  {{ csrf() }}
+  <div class="modal__content">
+    {{ modal_error("invite-form") }}
+    {{ field("email", t("auth.account.email"), mv("invite-form", "email"), type="email", required=True, attrs={"autocomplete": "off"}, prefix="invite-") }}
+    <div class="form-row">
+      {{ field("name", t("auth.account.name"), mv("invite-form", "name"), prefix="invite-") }}
+      {{ select("language", t("auth.account.language"), languages.items() | list, mv("invite-form", "language", current_language()), prefix="invite-") }}
+    </div>
+  </div>
+  {{ modal_actions(submit=t("auth.admins.invite"), icon="paper-plane", note=t("auth.admins.invite_note")) }}
+</form>
+{% endcall %}
+{% endblock %}

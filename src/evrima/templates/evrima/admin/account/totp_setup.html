@@ -1,0 +1,36 @@
+{#- Setting up the authenticator app: its own page (several steps). The QR
+    code is inline SVG, because the CSP allows no data: images. -#}
+{% extends "evrima/admin/base.html" %}
+{% from "evrima/admin/_macros.html" import page_header, field, csrf, page_form_actions %}
+{% block title %}{{ t("auth.totp.setup_title") }}{% endblock %}
+{% block content %}
+{{ page_header(t("auth.totp.setup_title"), t("auth.totp.explain"), "mobile-screen") }}
+<section class="card">
+  {% if error %}<div class="modal__error" role="alert"><i class="fa-solid fa-circle-exclamation"></i><div>{{ error }}</div></div>{% endif %}
+  <ol class="setup-steps">
+    <li>{{ t("auth.totp.step_scan") }}</li>
+    <li>{{ t("auth.totp.step_confirm") }}</li>
+  </ol>
+  <div class="totp-setup">
+    <div class="totp-setup__qr" role="img" aria-label="{{ t('auth.totp.qr_label') }}">{{ qr }}</div>
+    <div class="totp-setup__manual">
+      <p class="small muted">{{ t("auth.totp.manual_key") }}</p>
+      <p class="secret-text secret-text--big">{{ secret }}</p>
+      {#- On a phone the QR code cannot be scanned by the same phone; the
+          otpauth: link hands the account straight to the authenticator app. -#}
+      <p><a class="btn btn--secondary btn--small" href="{{ uri }}"><i class="fa-solid fa-mobile-screen-button"></i> {{ t("auth.totp.open_app") }}</a></p>
+      <p class="muted small mb-0">{{ t("auth.totp.open_app_hint") }}</p>
+    </div>
+  </div>
+  <form method="post" class="page-form">
+    {{ csrf() }}
+    <input type="email" name="username" value="{{ me.email }}" autocomplete="username" hidden>
+    <div class="form-row">
+      {{ field("code", t("auth.totp.code"), required=True,
+               attrs={"inputmode": "numeric", "autocomplete": "one-time-code", "maxlength": 7, "autofocus": True}, cls="mono") }}
+      {{ field("password", t("auth.login.password"), type="password", required=True, attrs={"autocomplete": "current-password"}) }}
+    </div>
+    {{ page_form_actions(url_for('evrima_account.account'), submit=t("auth.totp.confirm"), icon="check") }}
+  </form>
+</section>
+{% endblock %}

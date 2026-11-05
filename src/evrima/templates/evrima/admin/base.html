@@ -1,0 +1,104 @@
+{#- Admin frame: sidebar, user menu, flash messages, content, footer.
+    Every text comes from the catalogue (t), every behaviour from admin.js;
+    nothing inline, because of the Content-Security-Policy. Pages behind
+    the login only; the login pages use evrima/admin/auth/base.html. -#}
+{%- set ep = request.endpoint or '' -%}
+{%- set me = admin_user() -%}
+<!doctype html>
+<html lang="{{ current_language() }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block title %}{% endblock %} · {{ t("admin.frame.title_suffix") }}</title>
+  <link rel="stylesheet" href="{{ url_for('evrima.static', filename='vendor/fontawesome/css/all.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('evrima.static', filename='css/admin.css') }}">
+  <script src="{{ url_for('evrima.static', filename='vendor/jquery/jquery.min.js') }}" defer></script>
+  <script src="{{ url_for('evrima.static', filename='vendor/datatables/js/jquery.dataTables.min.js') }}" defer></script>
+  <script src="{{ url_for('evrima.static', filename='js/admin.js') }}" defer></script>
+</head>
+<body class="body--app" data-i18n="{{ admin_js_texts() | tojson | forceescape }}">
+<a class="skip-link" href="#content">{{ t("admin.frame.skip_link") }}</a>
+<div class="app-shell">
+  <aside class="sidebar" data-nav>
+    <div class="sidebar__brand">
+      <a href="{{ url_for('evrima_admin.index') }}"><i class="fa-solid fa-feather-pointed"></i> Evrima</a>
+      <span class="sidebar__instance">{{ request.host.split(':')[0] }}</span>
+      {#- Shown on phones only (admin.css); admin.js opens and closes the panel. -#}
+      <button type="button" class="sidebar__toggle" data-nav-toggle aria-expanded="false"
+              aria-controls="sidebar-panel" aria-label="{{ t('admin.js.nav.open') }}">
+        <i class="fa-solid fa-bars sidebar__toggle-open" aria-hidden="true"></i>
+        <i class="fa-solid fa-xmark sidebar__toggle-close" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="sidebar__panel" id="sidebar-panel">
+    {% macro nav_link(endpoint, icon, label, active) %}
+      <a href="{{ url_for(endpoint) }}" class="sidebar__link {{ 'is-active' if active }}"{{ ' aria-current="page"' | safe if active }}>
+        <i class="sidebar__link-icon fa-solid fa-{{ icon }}"></i> {{ label }}
+      </a>
+    {% endmacro %}
+    <nav class="sidebar__nav" aria-label="{{ t('admin.frame.nav_label') }}">
+      {% block nav %}
+      <div class="sidebar__section-label">{{ t("admin.frame.section_main") }}</div>
+      {{ nav_link('evrima_admin.index', 'house', t("admin.frame.nav_home"), ep == 'evrima_admin.index') }}
+
+      {#- Items of the enabled modules (evrima.modules). -#}
+      {%- set module_items = admin_menu() -%}
+      {% if module_items %}
+      <div class="sidebar__section-label">{{ t("admin.frame.section_content") }}</div>
+      {% for item, active in module_items %}
+      {{ nav_link(item.endpoint, item.icon, t(item.label), active) }}
+      {% endfor %}
+      {% endif %}
+
+      <div class="sidebar__section-label">{{ t("auth.admins.section") }}</div>
+      {{ nav_link('evrima_account.administrators', 'users-gear', t("auth.admins.nav"), ep == 'evrima_account.administrators') }}
+
+      {#- The design cookbook (/admin/design) is deliberately not in the menu:
+          administrators do not need it, but whoever writes a module (people
+          and AI alike) composes screens from it (docs/modules.md). -#}
+      {% endblock %}
+    </nav>
+
+    <div class="sidebar__bottom">
+      <div class="sidebar__user" data-dropdown>
+        {%- set parts = me.display_name.split() -%}
+        {%- set initials = ((parts[0][0] if parts else '?') ~ (parts[-1][0] if parts | length > 1 else '')) | upper -%}
+        <button type="button" class="sidebar__user-trigger user-menu__trigger" aria-haspopup="true" aria-expanded="false"
+                aria-label="{{ t('admin.frame.user_menu') }}">
+          <span class="sidebar__avatar" aria-hidden="true">{{ initials }}</span>
+          <span class="sidebar__user-info">
+            <strong>{{ me.display_name }}</strong>
+            <span class="sidebar__user-email">{{ me.email }}</span>
+          </span>
+          <span class="user-menu__chevron" aria-hidden="true">▴</span>
+        </button>
+        <div class="sidebar__user-panel user-menu__panel" hidden>
+          <a href="{{ url_for('evrima_account.account') }}" class="user-menu__item">
+            <i class="fa-solid fa-user-gear user-menu__icon"></i> {{ t("auth.account.menu") }}
+          </a>
+          {% include "evrima/admin/_language_switch.html" %}
+          <div class="user-menu__divider"></div>
+          <form action="{{ url_for('evrima_auth.logout') }}" method="post" class="user-menu__logout-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="user-menu__item user-menu__item--danger">
+              <i class="fa-solid fa-right-from-bracket user-menu__icon"></i> {{ t("auth.logout.button") }}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+    </div>
+  </aside>
+
+  <main class="main-area" id="content" tabindex="-1">
+    <div class="container">
+      {% include "evrima/admin/_flash.html" %}
+      {% block content %}{% endblock %}
+    </div>
+    <footer class="footer"><small>{{ t("admin.frame.footer", version=evrima_version()) }}</small></footer>
+  </main>
+</div>
+</body>
+</html>

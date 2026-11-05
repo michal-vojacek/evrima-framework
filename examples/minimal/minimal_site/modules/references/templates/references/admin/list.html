@@ -1,0 +1,58 @@
+{#- References in their website order. Drag with a mouse or use the arrows
+    (touch screens, keyboard), then save the order. Delete buttons belong to
+    forms outside the list (form="…"): forms cannot be nested. -#}
+{% extends "evrima/admin/base.html" %}
+{% from "evrima/admin/_macros.html" import page_header, csrf, empty %}
+{% block title %}{{ t("references.title") }}{% endblock %}
+{% block content %}
+{% call page_header(t("references.title"), t("references.subtitle"), "handshake") %}
+  <a class="btn btn--primary btn--small" href="{{ url_for('references_admin.new') }}"><i class="fa-solid fa-plus"></i> {{ t("references.add") }}</a>
+{% endcall %}
+
+<section class="card">
+  {% if references %}
+  <p class="muted small">{{ t("references.order_hint") }}</p>
+  <form method="post" action="{{ url_for('references_admin.order') }}">
+    {{ csrf() }}
+    <input type="hidden" name="order">
+    <ul class="sortable-list" data-sortable data-sortable-input="order">
+      {% for item in references %}
+      <li class="sortable-list__item" data-sortable-item data-id="{{ item.id }}" data-label="{{ item.client_name }}" draggable="true">
+        <i class="fa-solid fa-grip-vertical sortable__grip" aria-hidden="true"></i>
+        <span class="sortable-list__thumb">
+          {%- if item.image %}<img src="{{ media_url(item.image, 480) }}" alt="" loading="lazy">
+          {%- else %}<i class="fa-regular fa-image" aria-hidden="true"></i>{% endif -%}
+        </span>
+        <span class="sortable-list__body">
+          <a href="{{ url_for('references_admin.edit', reference_id=item.id) }}"><strong>{{ item.client_name }}</strong></a>
+          <span class="sortable-list__meta">
+            {% if item.published %}<span class="status status--ok">{{ t("references.state.published") }}</span>
+            {% else %}<span class="status status--na">{{ t("references.state.draft") }}</span>{% endif %}
+            {% if not item.consent_on %}<span class="status status--warn">{{ t("references.state.no_consent") }}</span>{% endif %}
+            {% if item.website_url %}<span class="muted small">{{ item.website_url.split('://', 1)[-1].rstrip('/') }}</span>{% endif %}
+          </span>
+        </span>
+        <span class="sortable-list__actions">
+          <button type="button" class="btn btn--ghost btn--small btn--icon" data-move="up" aria-label="{{ t('references.earlier', name=item.client_name) }}"><i class="fa-solid fa-arrow-up"></i></button>
+          <button type="button" class="btn btn--ghost btn--small btn--icon" data-move="down" aria-label="{{ t('references.later', name=item.client_name) }}"><i class="fa-solid fa-arrow-down"></i></button>
+          <a class="btn btn--ghost btn--small btn--icon" href="{{ url_for('references_admin.edit', reference_id=item.id) }}" aria-label="{{ t('references.edit', name=item.client_name) }}" data-tip="{{ t('references.edit', name=item.client_name) }}"><i class="fa-solid fa-pen"></i></a>
+          <button type="submit" form="delete-{{ item.id }}" class="btn btn--danger btn--small btn--icon" aria-label="{{ t('references.delete', name=item.client_name) }}" data-tip="{{ t('references.delete', name=item.client_name) }}"><i class="fa-solid fa-trash"></i></button>
+        </span>
+      </li>
+      {% endfor %}
+    </ul>
+    <div class="page-form__actions">
+      <button type="submit" class="btn btn--secondary"><i class="fa-solid fa-arrow-down-short-wide"></i> {{ t("references.save_order") }}</button>
+    </div>
+  </form>
+  {% for item in references %}
+  <form id="delete-{{ item.id }}" method="post" action="{{ url_for('references_admin.delete', reference_id=item.id) }}" hidden
+        data-confirm="{{ t('references.delete_confirm', name=item.client_name) }}"
+        data-confirm-title="{{ t('references.delete_title') }}"
+        data-confirm-ok="{{ t('references.delete_ok') }}">{{ csrf() }}</form>
+  {% endfor %}
+  {% else %}
+  {{ empty(t("references.empty"), t("references.empty_hint")) }}
+  {% endif %}
+</section>
+{% endblock %}

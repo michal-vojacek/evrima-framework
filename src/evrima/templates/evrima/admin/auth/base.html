@@ -1,0 +1,28 @@
+{#- Shell of the public login pages: brand on a gradient, one card, the
+    language switch below. No sidebar: nobody is logged in yet. -#}
+<!doctype html>
+<html lang="{{ current_language() }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block title %}{% endblock %} · {{ t("admin.frame.title_suffix") }}</title>
+  <link rel="stylesheet" href="{{ url_for('evrima.static', filename='vendor/fontawesome/css/all.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('evrima.static', filename='css/admin.css') }}">
+  <script src="{{ url_for('evrima.static', filename='js/admin.js') }}" defer></script>
+</head>
+<body class="body--auth" data-i18n="{{ admin_js_texts() | tojson | forceescape }}">
+<header class="auth-header">
+  <span class="auth-header__brand"><i class="fa-solid fa-feather-pointed"></i> Evrima</span>
+</header>
+<main class="container" id="content">
+  <div class="auth-card">
+    {% include "evrima/admin/_flash.html" %}
+    {% block content %}{% endblock %}
+  </div>
+  <div class="auth-languages">{% include "evrima/admin/_language_switch.html" %}</div>
+</main>
+<footer class="footer"><small>{{ request.host.split(':')[0] }}</small></footer>
+</body>
+</html>

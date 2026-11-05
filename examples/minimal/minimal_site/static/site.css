@@ -1,0 +1,26 @@
+/* Stylesheet of the minimal example website. */
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+}
+
+.page {
+  max-width: 40rem;
+  margin: 3rem auto;
+  padding: 0 1rem;
+}
+
+/* References (references/_public.html). */
+.references {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 2rem;
+}
+
+.references img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}

@@ -1,0 +1,9 @@
+{#- Flash messages of the current request (evrima/admin/_macros.html, flash_item). -#}
+{% from "evrima/admin/_macros.html" import flash_item %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul class="flash" role="status">
+  {% for category, message in messages %}{{ flash_item(category, message) }}{% endfor %}
+</ul>
+{% endif %}
+{% endwith %}

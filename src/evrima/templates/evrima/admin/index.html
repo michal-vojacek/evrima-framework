@@ -1,0 +1,10 @@
+{#- Admin start page. Modules will add their overview cards here. -#}
+{% extends "evrima/admin/base.html" %}
+{% from "evrima/admin/_macros.html" import page_header, empty %}
+{% block title %}{{ t("admin.frame.nav_home") }}{% endblock %}
+{% block content %}
+{{ page_header(t("admin.index.title"), t("admin.index.welcome", name=admin_user().display_name), "house") }}
+<section class="card">
+  {{ empty(t("admin.index.empty")) }}
+</section>
+{% endblock %}

@@ -1,0 +1,15 @@
+{#- Language switch: one small form per language, so it works without
+    JavaScript. The current page is passed as "next" and checked on the
+    server (evrima/admin/__init__.py, _safe_next). -#}
+<div class="lang-switch" role="group" aria-label="{{ t('admin.frame.language') }}">
+  <span class="lang-switch__label"><i class="fa-solid fa-language"></i> {{ t("admin.frame.language") }}</span>
+  {% for code, name in languages.items() %}
+  <form method="post" action="{{ url_for('evrima_admin.set_language') }}" class="lang-switch__form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="language" value="{{ code }}">
+    <input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+    <button type="submit" class="lang-switch__option {{ 'is-active' if code == current_language() }}"
+            lang="{{ code }}" {{ 'aria-pressed="true"' | safe if code == current_language() else 'aria-pressed="false"' | safe }}>{{ name }}</button>
+  </form>
+  {% endfor %}
+</div>
