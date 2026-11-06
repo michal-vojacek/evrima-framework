@@ -2,9 +2,9 @@
 
 Every release states what changed and whether websites need any change. Versioning rules: [docs/framework.md](docs/framework.md).
 
-## Unreleased
+## 0.1.0 (2026-11-06)
 
-The first release. It contains:
+The first release, for testing the deploy (versions 0.x are development releases, docs/framework.md, "Versioning rules"). It contains:
 
 - Package: `evrima` with the version taken from Git tags, exact pins of every dependency, MIT licence.
 - Core: application factory, configuration loading with startup checks (`flask evrima check-config`), security headers and a strict CSP, CSRF protection, rate limiter (an IPv6 client counts by its /64), request body limits per view (`BODY_LIMIT` 64 KB, `ADMIN_BODY_LIMIT` 1 MB, `@security.body_limit(bytes)` for views that take files, at most `MAX_CONTENT_LENGTH` 25 MB), `SITE_HOSTS` (required in production; other hosts get a plain-text 400), database session handling, Redis client, health check `/health`, default error pages, `flask evrima version`, minimal example website.
