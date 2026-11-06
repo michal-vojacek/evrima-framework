@@ -3,7 +3,8 @@
 from flask import Blueprint, abort, current_app, jsonify, request, send_from_directory
 from sqlalchemy import select
 
-from evrima import media
+from evrima import media, security
+from evrima.config import DEFAULT_MAX_CONTENT_LENGTH
 from evrima.auth import protect
 from evrima.auth.sessions import current_admin
 from evrima.db import db
@@ -51,6 +52,7 @@ def serve(name: str):
 
 
 @admin.post("/upload")
+@security.body_limit(DEFAULT_MAX_CONTENT_LENGTH)       # one file, up to the largest allowed document
 def upload():
     """Store one file sent by the admin's upload field; answer with JSON.
 

@@ -7,7 +7,7 @@ Backends, chosen by MAIL_BACKEND:
 
 - `smtp`: real delivery; the only backend allowed in production,
 - `console`: development; the message is printed to the server's console, so
-  a PIN can be read without a mail account,
+  a reset link can be read without a mail account,
 - `memory`: tests; messages are kept in `outbox()`.
 """
 
@@ -61,7 +61,7 @@ def send(to: str, subject: str, text: str, *, reply_to: str | None = None) -> No
         current_app.extensions[_OUTBOX_KEY].append(message)
     elif backend == "console":
         # Printed rather than logged: Flask's logger drops INFO messages
-        # unless debug mode is on, and the point is to see the PIN.
+        # unless debug mode is on, and the point is to see the e-mail.
         print(f"--- E-mail to {to}: {subject} ---\n{text}\n--- end of e-mail ---",
               file=sys.stderr, flush=True)
     else:

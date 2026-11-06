@@ -1,0 +1,50 @@
+{#- Skeleton of the privacy policy (Czech). Indicative only: the website fills in
+    the blocks marked "Doplňte" and has the page checked by a lawyer.
+    A website's legal/privacy.html: {% extends "evrima/legal/privacy.cs.html" %}
+    and override the blocks below. -#}
+{% extends config.SITE_LAYOUT %}
+{% from "evrima/legal/_macros.html" import todo %}
+{% block title %}Zásady ochrany osobních údajů{% endblock %}
+{% block content %}
+<article class="evrima-legal">
+  <h1>{% block legal_heading %}Zásady ochrany osobních údajů{% endblock %}</h1>
+  {% block legal_intro %}
+  <p>Na této stránce najdete, jaké osobní údaje zpracováváme, proč, jak dlouho a&nbsp;jaká máte práva.</p>
+  {% endblock %}
+
+  <h2>Správce osobních údajů</h2>
+  {% block legal_controller %}{{ todo("Doplňte: kdo je správce (jméno nebo název, IČO, sídlo) a jak ho kontaktovat.") }}{% endblock %}
+
+  <h2>Jaké údaje zpracováváme a&nbsp;proč</h2>
+  {% block legal_purposes %}{{ todo("Doplňte: které údaje, k jakému účelu a na jakém právním základě (např. poptávka z formuláře, plnění smlouvy, oprávněný zájem, souhlas).") }}{% endblock %}
+
+  <h2>Komu údaje předáváme</h2>
+  {% block legal_recipients %}{{ todo("Doplňte: zpracovatele a příjemce (např. hosting, e-mailová služba, účetní) a zda údaje opouštějí EU.") }}{% endblock %}
+
+  <h2>Jak dlouho údaje uchováváme</h2>
+  {% block legal_retention %}{{ todo("Doplňte: doby uchování pro jednotlivé účely.") }}{% endblock %}
+
+  {% block legal_statistics %}
+  {%- if telemetry_enabled %}
+  <h2>Statistiky návštěvnosti</h2>
+  <p>Web měří návštěvnost a&nbsp;rychlost načítání stránek. Měření nepoužívá cookies a&nbsp;neukládá IP adresy ani jiné údaje, podle kterých by šlo návštěvníka poznat.
+    {%- if visitors_category %} Pokud to v&nbsp;nastavení cookies povolíte, web navíc uloží do cookie náhodný identifikátor, podle kterého pozná opakovanou návštěvu (podrobnosti na stránce o&nbsp;cookies).{% endif %}</p>
+  {%- endif %}
+  {% endblock %}
+
+  {% block legal_cookies %}
+  {%- if cookies_url %}
+  <h2>Cookies</h2>
+  <p>Které cookies web používá a&nbsp;proč, popisuje stránka <a href="{{ cookies_url }}">Cookies</a>.</p>
+  {%- endif %}
+  {% endblock %}
+
+  <h2>Vaše práva</h2>
+  {% block legal_rights %}
+  <p>Máte právo požadovat přístup ke svým osobním údajům, jejich opravu nebo výmaz, omezení zpracování a&nbsp;přenos údajů a&nbsp;máte právo vznést námitku proti zpracování. Pokud zpracování probíhá na základě souhlasu, můžete ho kdykoli odvolat; zpracování před odvoláním tím nepřestává být zákonné.</p>
+  <p>Pokud se domníváte, že zpracování porušuje předpisy, můžete podat stížnost u&nbsp;Úřadu pro ochranu osobních údajů (<a href="https://uoou.gov.cz/">uoou.gov.cz</a>).</p>
+  {% endblock %}
+
+  {% block legal_effective %}{{ todo("Doplňte: od kdy tyto zásady platí.") }}{% endblock %}
+</article>
+{% endblock %}

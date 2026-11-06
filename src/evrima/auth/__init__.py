@@ -1,6 +1,6 @@
-"""Admin login: accounts, e-mailed PIN, trusted devices, TOTP, administrators.
+"""Admin login: accounts, sessions, administrators.
 
-Public pages (login, verification, forgotten password) live in `views`; the
+Public pages (login, forgotten password) live in `views`; the
 account page and the management of administrators in `accounts`, behind the
 login. Every admin blueprint, including modules' ones, protects itself with
 `protect(blueprint)`.

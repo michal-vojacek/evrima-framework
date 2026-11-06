@@ -18,7 +18,7 @@
 {% macro required_mark(required) %}{% if required %} <span class="muted" aria-hidden="true">*</span><span class="sr-only">({{ t("admin.common.required") }})</span>{% endif %}{% endmacro %}
 
 {#- Field ids are "f-<prefix><name>". Pages with several forms (one dialog per
-    record, password and TOTP dialogs side by side) pass a `prefix` per form,
+    record and password dialogs side by side) pass a `prefix` per form,
     so every label points at its own field.
     `attrs` is a dict of extra attributes, rendered escaped (never raw HTML). -#}
 {% macro field(name, label, value='', type='text', hint=None, required=False, placeholder='', attrs={}, readonly=False, invalid=None, cls='', prefix='') %}

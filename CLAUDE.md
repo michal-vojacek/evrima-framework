@@ -49,4 +49,4 @@ py -3.13 -m venv .venv
 .venv\Scripts\flask --app examples/minimal/minimal_site run --port 5050 --reload
 ```
 
-The dev server reads `.env` in the repository root (not committed): use a file database (`DATABASE_URL=sqlite:///dev.sqlite3`), because an in-memory SQLite database is not shared between the server's threads. The login PIN is printed to the server's console. Uploaded files land in the app's `instance/media/` folder (git-ignored); `media cleanup` deletes those never used by a saved form and runs daily in production.
+The dev server reads `.env` in the repository root (not committed): use a file database (`DATABASE_URL=sqlite:///dev.sqlite3`), because an in-memory SQLite database is not shared between the server's threads. E-mails (password reset links, invitations) are printed to the server's console. Uploaded files land in the app's `instance/media/` folder (git-ignored); `media cleanup` deletes those never used by a saved form and runs daily in production.

@@ -1,0 +1,16 @@
+{#- Helpers for the legal page skeletons and the website templates that fill them:
+    {% from "evrima/legal/_macros.html" import cookie_row %} -#}
+
+{#- A visible mark for a part only the website can write. A page that still
+    shows one is not finished. -#}
+{% macro todo(text) %}<p class="evrima-legal-todo"><strong>[{{ text }}]</strong></p>{% endmacro %}
+
+{#- One row of a cookie table. -#}
+{% macro cookie_row(name, provider, purpose, duration) %}
+<tr>
+  <td><code>{{ name }}</code></td>
+  <td>{{ provider }}</td>
+  <td>{{ purpose }}</td>
+  <td>{{ duration }}</td>
+</tr>
+{%- endmacro %}

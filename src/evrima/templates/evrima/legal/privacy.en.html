@@ -1,0 +1,50 @@
+{#- Skeleton of the privacy policy (English). Indicative only: the website fills in
+    the blocks marked "Fill in" and has the page checked by a lawyer.
+    A website's legal/privacy.html: {% extends "evrima/legal/privacy.en.html" %}
+    and override the blocks below. -#}
+{% extends config.SITE_LAYOUT %}
+{% from "evrima/legal/_macros.html" import todo %}
+{% block title %}Privacy policy{% endblock %}
+{% block content %}
+<article class="evrima-legal">
+  <h1>{% block legal_heading %}Privacy policy{% endblock %}</h1>
+  {% block legal_intro %}
+  <p>This page explains which personal data we process, why, for how long and what your rights are.</p>
+  {% endblock %}
+
+  <h2>Controller</h2>
+  {% block legal_controller %}{{ todo("Fill in: who the controller is (name, company ID, address) and how to contact them.") }}{% endblock %}
+
+  <h2>What we process and why</h2>
+  {% block legal_purposes %}{{ todo("Fill in: which data, for which purpose and on which legal basis (e.g. an enquiry from the form, a contract, legitimate interest, consent).") }}{% endblock %}
+
+  <h2>Who receives the data</h2>
+  {% block legal_recipients %}{{ todo("Fill in: processors and recipients (e.g. hosting, e-mail service, accountant) and whether data leaves the EU.") }}{% endblock %}
+
+  <h2>How long we keep the data</h2>
+  {% block legal_retention %}{{ todo("Fill in: retention periods for each purpose.") }}{% endblock %}
+
+  {% block legal_statistics %}
+  {%- if telemetry_enabled %}
+  <h2>Visitor statistics</h2>
+  <p>The website measures visits and page load times. The measurement uses no cookies and stores no IP addresses or other data that could identify a visitor.
+    {%- if visitors_category %} If you allow it in the cookie settings, the website also stores a random identifier in a cookie to recognise a returning visit (details on the cookies page).{% endif %}</p>
+  {%- endif %}
+  {% endblock %}
+
+  {% block legal_cookies %}
+  {%- if cookies_url %}
+  <h2>Cookies</h2>
+  <p>Which cookies the website uses and why is described on the <a href="{{ cookies_url }}">Cookies</a> page.</p>
+  {%- endif %}
+  {% endblock %}
+
+  <h2>Your rights</h2>
+  {% block legal_rights %}
+  <p>You have the right to access your personal data, to have it corrected or erased, to restrict its processing, to data portability and to object to the processing. Where processing is based on consent, you can withdraw it at any time; this does not affect the processing before the withdrawal.</p>
+  <p>If you believe the processing breaks the law, you can lodge a complaint with the data protection authority.</p>
+  {% endblock %}
+
+  {% block legal_effective %}{{ todo("Fill in: the date these terms apply from.") }}{% endblock %}
+</article>
+{% endblock %}

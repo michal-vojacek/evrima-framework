@@ -1,5 +1,9 @@
 """Admin languages: text catalogues and the user's language.
 
+The same catalogues hold the few public texts of the framework (the consent
+banner); those are shown in the website's language, SITE_LANGUAGE, with
+`site_t("key")`, never in the administrator's.
+
 Texts live outside code, in TOML catalogues. Every key lists all supported
 languages side by side, so a missing translation is visible at a glance:
 
@@ -161,6 +165,7 @@ def init_app(app: Flask) -> None:
     app.jinja_env.globals.update(
         t=translate,
         tn=translate_plural,
+        site_t=site_text,
         current_language=get_language,
         languages=LANGUAGES,
     )
@@ -212,6 +217,11 @@ def translate(key: str, **params: Any) -> str:
 def translate_for(language: str, key: str, **params: Any) -> str:
     """Like `translate`, but in a given language (e.g. an e-mail in the recipient's language)."""
     return _render(key, None, params, language)
+
+
+def site_text(key: str, **params: Any) -> str:
+    """Like `translate`, but in the website's language (SITE_LANGUAGE): for texts visitors see."""
+    return _render(key, None, params, current_app.config.get("SITE_LANGUAGE", DEFAULT_LANGUAGE))
 
 
 def translate_plural(key: str, count: int, **params: Any) -> str:

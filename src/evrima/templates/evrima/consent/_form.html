@@ -1,0 +1,32 @@
+{#- The consent form, shared by the banner and the settings page. Works without
+    JavaScript: every button submits the form; consent.js only saves it in the
+    background. A website changes it by overriding consent/banner.html or
+    consent/settings.html, or by its stylesheet. -#}
+<form class="evrima-consent__form" method="post" action="{{ url_for('evrima_consent.save') }}" data-evrima-consent-form>
+  <input type="hidden" name="next" value="{{ consent_next }}">
+  <details class="evrima-consent__details"{% if consent_open %} open{% endif %}>
+    <summary>{{ site_t("consent.banner.settings") }}</summary>
+    <ul class="evrima-consent__categories">
+      <li class="evrima-consent__category">
+        <label><input type="checkbox" checked disabled> {{ site_t("consent.category.necessary.name") }}
+          <span class="evrima-consent__always">({{ site_t("consent.always") }})</span></label>
+        <p class="evrima-consent__description">{{ site_t("consent.category.necessary.description") }}</p>
+      </li>
+      {%- for category in consent_categories %}
+      <li class="evrima-consent__category">
+        <label><input type="checkbox" name="category" value="{{ category }}"
+          {%- if category in consent_allowed %} checked{% endif %}> {{ site_t("consent.category." ~ category ~ ".name") }}</label>
+        <p class="evrima-consent__description">{{ site_t("consent.category." ~ category ~ ".description") }}</p>
+      </li>
+      {%- endfor %}
+    </ul>
+    <div class="evrima-consent__actions">
+      <button class="evrima-consent__button evrima-consent__button--secondary" type="submit" name="choice" value="selected">{{ site_t("consent.banner.save") }}</button>
+    </div>
+  </details>
+  <div class="evrima-consent__actions">
+    <button class="evrima-consent__button" type="submit" name="choice" value="none">{{ site_t("consent.banner.reject_all") }}</button>
+    <button class="evrima-consent__button" type="submit" name="choice" value="all">{{ site_t("consent.banner.accept_all") }}</button>
+  </div>
+  <p class="evrima-consent__saved" role="status" data-evrima-consent-saved hidden>{{ site_t("consent.settings.saved") }}</p>
+</form>

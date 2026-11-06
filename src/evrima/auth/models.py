@@ -4,13 +4,12 @@ Times are stored as naive UTC (`utcnow()`): SQLite, used in development and
 tests, drops time zones, and mixing aware and naive values breaks comparisons.
 
 Secrets are never stored as they are: passwords as Argon2id hashes, random
-tokens (sessions, devices, links) as SHA-256, PINs as HMAC with the app's
-SECRET_KEY, TOTP secrets encrypted.
+tokens (sessions, links) as SHA-256.
 """
 
 from datetime import datetime
 
-from sqlalchemy import ForeignKey, Integer, String, Text
+from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from evrima.db import Base, utcnow
@@ -28,28 +27,17 @@ class Administrator(Base):
     # None until the invited person sets a password.
     password_hash: Mapped[str | None] = mapped_column(String(255))
     language: Mapped[str] = mapped_column(String(5), default="cs")
-    totp_secret: Mapped[str | None] = mapped_column(Text)            # encrypted
-    totp_pending_secret: Mapped[str | None] = mapped_column(Text)    # encrypted, during setup
-    # The last accepted TOTP time step: a code is accepted only once.
-    totp_last_step: Mapped[int | None] = mapped_column(Integer)
     created_at: Mapped[datetime] = mapped_column(default=utcnow)
     password_changed_at: Mapped[datetime | None]
     last_login_at: Mapped[datetime | None]
 
     sessions: Mapped[list["AdminSession"]] = relationship(
         back_populates="administrator", cascade="all, delete-orphan", passive_deletes=True)
-    devices: Mapped[list["TrustedDevice"]] = relationship(
-        back_populates="administrator", cascade="all, delete-orphan", passive_deletes=True)
 
     @property
     def is_invited(self) -> bool:
         """True until the person has set a password."""
         return self.password_hash is None
-
-    @property
-    def totp_enabled(self) -> bool:
-        """True when a TOTP code may replace the e-mailed PIN."""
-        return self.totp_secret is not None
 
     @property
     def display_name(self) -> str:
@@ -71,38 +59,6 @@ class AdminSession(Base):
     user_agent: Mapped[str] = mapped_column(String(200), default="")
 
     administrator: Mapped[Administrator] = relationship(back_populates="sessions")
-
-
-class TrustedDevice(Base):
-    """A browser that verified a PIN or TOTP code; no PIN is asked there for 10 days."""
-
-    __tablename__ = "evrima_trusted_devices"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    token_hash: Mapped[str] = mapped_column(String(64), unique=True)
-    administrator_id: Mapped[int] = mapped_column(
-        ForeignKey("evrima_administrators.id", ondelete="CASCADE"), index=True)
-    created_at: Mapped[datetime] = mapped_column(default=utcnow)
-    expires_at: Mapped[datetime]
-    last_used_at: Mapped[datetime | None]
-    user_agent: Mapped[str] = mapped_column(String(200), default="")
-
-    administrator: Mapped[Administrator] = relationship(back_populates="devices")
-
-
-class LoginChallenge(Base):
-    """The second step of a login: an e-mailed PIN waiting to be entered."""
-
-    __tablename__ = "evrima_login_challenges"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    administrator_id: Mapped[int] = mapped_column(
-        ForeignKey("evrima_administrators.id", ondelete="CASCADE"), index=True)
-    pin_hash: Mapped[str] = mapped_column(String(64))
-    created_at: Mapped[datetime] = mapped_column(default=utcnow)
-    expires_at: Mapped[datetime]
-    attempts: Mapped[int] = mapped_column(default=0)
-    used_at: Mapped[datetime | None]
 
 
 class LoginFailure(Base):

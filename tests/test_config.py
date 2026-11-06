@@ -110,3 +110,18 @@ def test_requests_for_foreign_hosts_are_refused():
     assert client.get("/health", base_url="https://evil.example").status_code == 400
     assert client.get("/", base_url="https://example.com").status_code != 400
     assert client.get("/", base_url="http://localhost").status_code != 400
+
+
+def test_a_foreign_or_upper_case_host_gets_a_plain_400(make_app):
+    """The website's error page may call url_for, which needs routing; the answer must still be a 400."""
+    from jinja2 import ChoiceLoader, DictLoader
+
+    app = make_app(env={"SITE_HOSTS": "example.com"})
+    app.jinja_env.loader = ChoiceLoader([DictLoader({"errors/error.html": "{{ url_for('evrima_health.health') }}"}),
+                                         app.jinja_env.loader])
+    client = app.test_client()
+    for host in ("evil.example", "EXAMPLE.COM", "example.com."):
+        response = client.get("/", base_url="https://example.com", headers={"Host": host})
+        assert response.status_code == 400
+        assert response.mimetype == "text/plain" and response.get_data(as_text=True).startswith("400 Bad Request")
+    assert client.get("/missing", base_url="https://example.com").status_code == 404

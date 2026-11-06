@@ -308,11 +308,7 @@ A module has its own public routes (`views.py`, a blueprint without `protect`, n
 
 ## 10. Tests
 
-Tests live with the website. Copy the fixtures from the framework's [tests/conftest.py](../tests/conftest.py) (the framework does not ship them as a package yet):
-
-- `make_app(modules=[pricing])` builds a migrated testing app;
-- `admin_client` is a logged-in HTTPS client;
-- `add_admin`, `log_in`, `https_client`, `csrf_token(client, path)` and `last_pin`.
+Tests live with the website, which writes its own (decided 2026-11-06). The framework's [tests/conftest.py](../tests/conftest.py) shows one way to build a migrated testing app and a logged-in client.
 
 Every module tests at least:
 

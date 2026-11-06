@@ -21,7 +21,12 @@ PASSWORD_MIN_LENGTH = 12
 # Argon2 handles long input, but there is no reason to accept megabytes.
 PASSWORD_MAX_LENGTH = 1024
 
-_hasher = PasswordHasher()
+# OWASP's minimum for Argon2id (m = 19 MiB, t = 2, p = 1), decided 2026-11-06
+# after the security audit. The library default (64 MiB, t = 3, p = 4) made a
+# flood of login attempts cost up to half a gigabyte of memory per website on a
+# shared server. Hashes made with other parameters are redone at the next login
+# (needs_rehash).
+_hasher = PasswordHasher(time_cost=2, memory_cost=19 * 1024, parallelism=1)
 # Verified when the e-mail is unknown, so the answer takes as long as for a
 # real account and the timing does not reveal which e-mails exist.
 _DUMMY_HASH = _hasher.hash("evrima-timing-equaliser")
@@ -66,17 +71,6 @@ def new_token() -> str:
 def token_hash(token: str) -> str:
     """The SHA-256 of a token, as stored in the database."""
     return hashlib.sha256(token.encode()).hexdigest()
-
-
-def new_pin() -> str:
-    """A six-digit PIN, uniformly random (leading zeros allowed)."""
-    return f"{secrets.randbelow(1_000_000):06d}"
-
-
-def pin_hash(challenge_id: int, pin: str) -> str:
-    """HMAC of the PIN, bound to its challenge so a hash cannot be reused elsewhere."""
-    key = current_app.config["SECRET_KEY"].encode()
-    return hmac.new(key, f"{challenge_id}:{pin}".encode(), hashlib.sha256).hexdigest()
 
 
 def same(a: str, b: str) -> bool:

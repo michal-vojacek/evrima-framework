@@ -1,0 +1,13 @@
+{#- The settings page (/_evrima/consent): for visitors without JavaScript and
+    for the "Cookie settings" link. Extends the website's layout (SITE_LAYOUT)
+    and fills its `title` and `content` blocks. -#}
+{% extends config.SITE_LAYOUT %}
+{% block title %}{{ site_t("consent.settings.title") }}{% endblock %}
+{% block content %}
+<div class="evrima-consent-page">
+  <h1>{{ site_t("consent.settings.title") }}</h1>
+  <p>{{ site_t("consent.settings.intro") }}
+    {%- if cookies_url %} <a href="{{ cookies_url }}">{{ site_t("consent.banner.more") }}</a>{% endif %}</p>
+  {% include "evrima/consent/_form.html" %}
+</div>
+{% endblock %}

@@ -27,9 +27,6 @@ dependencies = [
     "gunicorn==26.2.0",
     "alembic==1.20.0",
     "argon2-cffi==25.1.0",
-    "pyotp==2.10.0",
-    "cryptography==50.0.2",
-    "qrcode==8.2",
     "pillow==12.3.0",
     "nh3==0.3.7",
     # Transitive dependencies
@@ -58,9 +55,11 @@ dependencies = [
 [project.optional-dependencies]
 test = [
     "pytest==9.1.1",
+    "fakeredis==2.40.0",
     "iniconfig==2.3.1",
     "pluggy==1.6.0",
     "Pygments==2.21.0",
+    "sortedcontainers==2.4.0",
 ]
 
 [tool.hatch.version]

@@ -19,14 +19,18 @@ def test_website_overrides_its_404_page(client):
     assert "Fixture site 404" in response.get_data(as_text=True)
 
 
-def test_framework_fallback_for_errors_without_override(client):
+def test_framework_fallback_is_in_the_websites_language(client, make_app):
     response = client.post("/health")
     assert response.status_code == 405
-    assert "405 Method Not Allowed" in response.get_data(as_text=True)
+    body = response.get_data(as_text=True)
+    assert '<html lang="cs">' in body and "405 Nepovolená metoda" in body
+
+    english = https_client(make_app(SITE_LANGUAGE="en")).post("/health")
+    assert "405 Method Not Allowed" in english.get_data(as_text=True)
 
 
 def test_unhandled_exception_renders_500_without_details(make_app):
-    client = https_client(make_app(blueprints=[broken]))
+    client = https_client(make_app(blueprints=[broken], SITE_LANGUAGE="en"))
     response = client.get("/broken")
     body = response.get_data(as_text=True)
     assert response.status_code == 500

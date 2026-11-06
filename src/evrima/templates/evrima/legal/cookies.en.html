@@ -1,0 +1,58 @@
+{#- Skeleton of the cookies page (English). The framework lists its own cookies;
+    the website adds its own and third-party cookies in the blocks
+    `necessary_cookies` and `category_cookies` (the latter is rendered once per
+    consent category, with `category` set), e.g.
+      {% extends "evrima/legal/cookies.en.html" %}
+      {% from "evrima/legal/_macros.html" import cookie_row %}
+      {% block category_cookies %}{% if category == "analytics" %}
+        {{ cookie_row("_ga", "Google", "Tells visitors apart in Google Analytics", "2 years") }}
+      {% endif %}{% endblock %}
+    Indicative only; to be checked by a lawyer. -#}
+{% extends config.SITE_LAYOUT %}
+{% from "evrima/legal/_macros.html" import cookie_row %}
+{% block title %}Cookies{% endblock %}
+{% block content %}
+<article class="evrima-legal">
+  <h1>{% block legal_heading %}Cookies{% endblock %}</h1>
+  {% block legal_intro %}
+  <p>Cookies are small files a website stores in your browser. Necessary cookies are needed for the website to work and need no consent.
+    {%- if consent_enabled %} Others we use only with your consent.{% endif %}</p>
+  {% endblock %}
+
+  {%- if consent_enabled %}
+  <p><a href="{{ consent_settings_url() }}" data-evrima-consent-open>{{ site_t("consent.link") }}</a></p>
+  {%- endif %}
+
+  <h2>{{ site_t("consent.category.necessary.name") }}</h2>
+  <table class="evrima-legal__cookies">
+    <thead><tr><th>Name</th><th>Set by</th><th>Purpose</th><th>Kept for</th></tr></thead>
+    <tbody>
+      {{ cookie_row(session_cookie, "this website", "Protects forms against forgery; set only on pages with a form", "until the browser is closed") }}
+      {%- if consent_enabled %}
+      {{ cookie_row(consent_cookie, "this website", "Remembers your choice in the cookie settings", "12 months") }}
+      {%- endif %}
+      {{ cookie_row(admin_cookie, "this website", "Login to the administration; only for the website's administrators", "24 hours at most") }}
+      {% block necessary_cookies %}{% endblock %}
+    </tbody>
+  </table>
+
+  {%- for category in consent_categories %}
+  <h2>{{ site_t("consent.category." ~ category ~ ".name") }}</h2>
+  <p>{{ site_t("consent.category." ~ category ~ ".description") }}</p>
+  <table class="evrima-legal__cookies">
+    <thead><tr><th>Name</th><th>Set by</th><th>Purpose</th><th>Kept for</th></tr></thead>
+    <tbody>
+      {%- if category == visitors_category %}
+      {{ cookie_row(visitor_cookie, "this website", "A random identifier that recognises a returning visit in the visitor statistics", "13 months") }}
+      {%- endif %}
+      {% block category_cookies scoped %}{% endblock %}
+    </tbody>
+  </table>
+  {%- endfor %}
+
+  {% block legal_more %}
+  <p>You can also delete or block cookies at any time in your browser's settings.
+    {%- if privacy_url %} How we process personal data is described in the <a href="{{ privacy_url }}">privacy policy</a>.{% endif %}</p>
+  {% endblock %}
+</article>
+{% endblock %}

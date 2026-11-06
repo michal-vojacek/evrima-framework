@@ -59,7 +59,7 @@ def create_admin_command(email: str, name: str, language: str) -> None:
 @click.argument("current_email")
 @click.argument("new_email")
 def set_admin_email_command(current_email: str, new_email: str) -> None:
-    """Change an administrator's e-mail; their sessions and trusted devices end."""
+    """Change an administrator's e-mail; their sessions end."""
     admin = _find(current_email)
     new_email = normalise_email(new_email)
     if not EMAIL_PATTERN.match(new_email):

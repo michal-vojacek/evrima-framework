@@ -21,8 +21,8 @@ en = "Password"
 cs = "Heslo"
 
 [auth.login.submit]
-en = "Continue"
-cs = "Pokračovat"
+en = "Log in"
+cs = "Přihlásit se"
 
 [auth.login.forgot]
 en = "Forgotten password"
@@ -36,22 +36,6 @@ cs = "Nesprávný e-mail nebo heslo."
 en = "Too many failed attempts. Try again in {minutes} minutes."
 cs = "Příliš mnoho neúspěšných pokusů. Zkuste to znovu za {minutes} min."
 
-[auth.login.mail_failed]
-en = "The verification code could not be sent. Try again in a while."
-cs = "Ověřovací kód se nepodařilo odeslat. Zkuste to prosím za chvíli."
-
-[auth.login.mail_failed_totp]
-en = "The verification code could not be sent. Use the code from your authenticator app."
-cs = "Ověřovací kód se nepodařilo odeslat. Použijte kód z ověřovací aplikace."
-
-[auth.login.too_many_codes]
-en = "Too many codes were requested in the last hour. Try again later."
-cs = "Za poslední hodinu bylo vyžádáno příliš mnoho kódů. Zkuste to prosím později."
-
-[auth.login.expired]
-en = "The login took too long. Please start again."
-cs = "Přihlášení trvalo příliš dlouho. Začněte prosím znovu."
-
 [auth.logout.done]
 en = "You have been logged out."
 cs = "Byli jste odhlášeni."
@@ -60,61 +44,7 @@ cs = "Byli jste odhlášeni."
 en = "Log out"
 cs = "Odhlásit se"
 
-# --- Verification (PIN or TOTP) --------------------------------------------------
-
-[auth.verify.title]
-en = "Verification"
-cs = "Ověření"
-
-[auth.verify.pin_intro]
-en = "We have sent a six-digit code to {email}. It is valid for 10 minutes."
-cs = "Na {email} jsme poslali šestimístný kód. Platí 10 minut."
-
-[auth.verify.pin]
-en = "Code from the e-mail"
-cs = "Kód z e-mailu"
-
-[auth.verify.totp_intro]
-en = "Enter the current code from your authenticator app."
-cs = "Zadejte aktuální kód z ověřovací aplikace."
-
-[auth.verify.totp]
-en = "Code from the app"
-cs = "Kód z aplikace"
-
-[auth.verify.submit]
-en = "Log in"
-cs = "Přihlásit se"
-
-[auth.verify.use_totp]
-en = "Use the code from the authenticator app instead"
-cs = "Použít místo toho kód z ověřovací aplikace"
-
-[auth.verify.use_pin]
-en = "Use the code from the e-mail instead"
-cs = "Použít místo toho kód z e-mailu"
-
-[auth.verify.resend]
-en = "Send a new code"
-cs = "Poslat nový kód"
-
-[auth.verify.resent]
-en = "A new code is on its way."
-cs = "Nový kód je na cestě."
-
-[auth.verify.wrong]
-en = "The code is not valid."
-cs = "Kód není platný."
-
-[auth.verify.too_many]
-en = "Too many wrong codes. Send yourself a new one."
-cs = "Příliš mnoho chybných kódů. Nechte si poslat nový."
-
-[auth.verify.back]
-en = "Log in as someone else"
-cs = "Přihlásit se jako někdo jiný"
-
-# --- Password: forgotten, set, rules ------------------------------------------
+# --- Forgotten password, new password ----------------------------------------
 
 [auth.forgot.title]
 en = "Forgotten password"
@@ -246,18 +176,6 @@ cs = "Současné heslo"
 en = "The password is changed. Every other device has been logged out."
 cs = "Heslo je změněné. Všechna ostatní zařízení byla odhlášena."
 
-[auth.account.devices]
-en = "Trusted devices"
-cs = "Důvěryhodná zařízení"
-
-[auth.account.devices_hint]
-en = "Devices that need no e-mailed code for 10 days after a login."
-cs = "Zařízení, která po přihlášení 10 dní nepotřebují kód z e-mailu."
-
-[auth.account.devices_count]
-en = { one = "{count} device", other = "{count} devices" }
-cs = { one = "{count} zařízení", few = "{count} zařízení", other = "{count} zařízení" }
-
 [auth.account.logout_everywhere]
 en = "Log out everywhere else"
 cs = "Odhlásit všude jinde"
@@ -269,84 +187,6 @@ cs = "Všechny ostatní prohlížeče se odhlásí a budou znovu potřebovat kó
 [auth.account.logged_out_everywhere]
 en = "All other devices have been logged out."
 cs = "Všechna ostatní zařízení byla odhlášena."
-
-# --- TOTP ----------------------------------------------------------------------
-
-[auth.totp.title]
-en = "Authenticator app"
-cs = "Ověřovací aplikace"
-
-[auth.totp.explain]
-en = "A safety net for when the e-mail with the code does not arrive: instead of it, you can enter the code from an app such as Google Authenticator or Microsoft Authenticator."
-cs = "Pojistka pro případ, že e-mail s kódem nedorazí: místo něj zadáte kód z aplikace, například Google Authenticator nebo Microsoft Authenticator."
-
-[auth.totp.on]
-en = "on"
-cs = "zapnuto"
-
-[auth.totp.off]
-en = "off"
-cs = "vypnuto"
-
-[auth.totp.enable]
-en = "Set up the app"
-cs = "Nastavit aplikaci"
-
-[auth.totp.disable]
-en = "Turn off"
-cs = "Vypnout"
-
-[auth.totp.setup_title]
-en = "Set up the authenticator app"
-cs = "Nastavení ověřovací aplikace"
-
-[auth.totp.step_scan]
-en = "Scan the QR code with the app, or type in the key."
-cs = "Naskenujte QR kód aplikací, nebo opište klíč."
-
-[auth.totp.step_confirm]
-en = "Confirm with your password and the code the app shows."
-cs = "Potvrďte heslem a kódem, který aplikace ukazuje."
-
-[auth.totp.manual_key]
-en = "Key for manual entry"
-cs = "Klíč pro ruční zadání"
-
-[auth.totp.open_app]
-en = "Open in the authenticator app"
-cs = "Otevřít v ověřovací aplikaci"
-
-[auth.totp.open_app_hint]
-en = "On the phone with the app: adds the account without scanning."
-cs = "Na telefonu s aplikací: přidá účet bez skenování."
-
-[auth.totp.qr_label]
-en = "QR code for the authenticator app"
-cs = "QR kód pro ověřovací aplikaci"
-
-[auth.totp.code]
-en = "Code from the app"
-cs = "Kód z aplikace"
-
-[auth.totp.confirm]
-en = "Turn on"
-cs = "Zapnout"
-
-[auth.totp.enabled]
-en = "The authenticator app is set up."
-cs = "Ověřovací aplikace je nastavená."
-
-[auth.totp.disabled]
-en = "The authenticator app is turned off."
-cs = "Ověřovací aplikace je vypnutá."
-
-[auth.totp.wrong]
-en = "The password or the code is not correct."
-cs = "Heslo nebo kód není správný."
-
-[auth.totp.disable_note]
-en = "To turn it off, confirm with your password and a current code."
-cs = "Pro vypnutí potvrďte heslem a aktuálním kódem."
 
 # --- Administrators ------------------------------------------------------------
 
@@ -512,24 +352,6 @@ cs = "Zatím tu nejsou žádní administrátoři."
 en = "Administration of {site}"
 cs = "Administrace webu {site}"
 
-[auth.email.pin.subject]
-en = "Login code for {site}"
-cs = "Přihlašovací kód pro {site}"
-
-[auth.email.pin.body]
-en = """Your login code: {pin}
-
-It is valid for 10 minutes and can be used once.
-
-If you are not logging in right now, someone knows your password. Change it here:
-{reset_url}"""
-cs = """Váš přihlašovací kód: {pin}
-
-Platí 10 minut a lze ho použít jen jednou.
-
-Pokud se právě nepřihlašujete, někdo zná vaše heslo. Změňte si ho tady:
-{reset_url}"""
-
 [auth.email.reset.subject]
 en = "New password for {site}"
 cs = "Nové heslo pro {site}"
@@ -562,18 +384,3 @@ Heslo si zvolíte tady:
 
 Odkaz platí 3 dny."""
 
-[auth.email.totp_login.subject]
-en = "Login to {site} with the authenticator app"
-cs = "Přihlášení k {site} přes ověřovací aplikaci"
-
-[auth.email.totp_login.body]
-en = """Someone has just logged in to the administration of {site} with a code from the authenticator app.
-Browser: {browser}
-
-If it was not you, change your password straight away:
-{reset_url}"""
-cs = """Právě se někdo přihlásil do administrace webu {site} kódem z ověřovací aplikace.
-Prohlížeč: {browser}
-
-Pokud jste to nebyli vy, hned si změňte heslo:
-{reset_url}"""

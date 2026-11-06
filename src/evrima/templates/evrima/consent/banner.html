@@ -1,0 +1,9 @@
+{#- The consent banner, rendered by {{ consent_banner() }}. Hidden once the
+    visitor has decided; consent.js shows it again for a link marked
+    data-evrima-consent-open. -#}
+<section class="evrima-consent" data-evrima-consent aria-labelledby="evrima-consent-title"{% if consent_hidden %} hidden{% endif %}>
+  <h2 class="evrima-consent__title" id="evrima-consent-title" tabindex="-1" data-evrima-consent-title>{{ site_t("consent.banner.title") }}</h2>
+  <p class="evrima-consent__text">{{ site_t("consent.banner.text") }}
+    {%- if cookies_url %} <a href="{{ cookies_url }}">{{ site_t("consent.banner.more") }}</a>{% endif %}</p>
+  {% include "evrima/consent/_form.html" %}
+</section>

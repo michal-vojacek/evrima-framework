@@ -1,20 +1,37 @@
 {#- Framework fallback error page. Deliberately plain: no stylesheet, no
     script, so it renders even when static files or the database are the
     cause of the error. Websites override it with errors/<code>.html or
-    errors/error.html in their own templates. -#}
+    errors/error.html in their own templates. Written in the website's
+    language (SITE_LANGUAGE); a website with its own error pages decides
+    their language itself. -#}
+{%- set language = config.SITE_LANGUAGE -%}
+{%- set czech = {
+  400: ("Chybný požadavek", "Prohlížeč poslal požadavek, kterému server nerozumí."),
+  403: ("Přístup odepřen", "K této stránce nemáte přístup."),
+  404: ("Stránka nenalezena", "Stránka na této adrese neexistuje. Možná byla přesunuta nebo smazána."),
+  405: ("Nepovolená metoda", "Tento požadavek stránka nepřijímá."),
+  413: ("Příliš velký požadavek", "Odeslaná data jsou příliš velká."),
+  429: ("Příliš mnoho požadavků", "Poslali jste příliš mnoho požadavků. Zkuste to prosím za chvíli."),
+  500: ("Chyba serveru", "Na serveru se něco pokazilo. Zkuste to prosím později."),
+} -%}
+{%- if language == "cs" and error.code in czech -%}
+  {%- set name, description = czech[error.code] -%}
+{%- else -%}
+  {%- set name, description = error.name, error.description -%}
+{%- endif -%}
 <!doctype html>
-<html lang="en">
+<html lang="{{ language }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
-  <title>{{ error.code }} {{ error.name }}</title>
+  <title>{{ error.code }} {{ name }}</title>
 </head>
 <body>
   <main>
-    <h1>{{ error.code }} {{ error.name }}</h1>
-    <p>{{ error.description }}</p>
-    <p><a href="/">Home page</a></p>
+    <h1>{{ error.code }} {{ name }}</h1>
+    <p>{{ description }}</p>
+    <p><a href="/">{{ "Úvodní stránka" if language == "cs" else "Home page" }}</a></p>
   </main>
 </body>
 </html>

@@ -87,7 +87,7 @@ def test_script_texts_are_handed_over_in_the_page_language(page):
 
 
 @pytest.mark.parametrize("path", [
-    "/admin/", "/admin/design", "/admin/account", "/admin/account/totp", "/admin/administrators"])
+    "/admin/", "/admin/design", "/admin/account", "/admin/administrators"])
 def test_admin_markup_has_nothing_inline(admin_client, path):
     # The CSP forbids inline scripts, inline styles and inline handlers; one
     # slip in a template would be blocked by the browser and break the page.

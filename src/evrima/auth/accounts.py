@@ -1,8 +1,7 @@
 """Pages behind the login: the user's own account and the administrators.
 
-Short forms (profile, password, turning TOTP off, inviting) open in dialogs
-and reopen with the error after a rejected submit (evrima/admin/modal.py).
-The TOTP setup has more steps and gets its own page.
+Short forms (profile, password, inviting) open in dialogs and reopen with the
+error after a rejected submit (evrima/admin/modal.py).
 
 There is a single role: every administrator may invite, edit and remove
 others (docs/framework.md, "Admin login"). Nobody removes themselves or
@@ -11,12 +10,12 @@ set-admin-email` does that.
 """
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
-from sqlalchemy import func, select, update
+from sqlalchemy import select, update
 
 from evrima import i18n
 from evrima.admin import modal
-from evrima.auth import audit, credentials, emails, protect, sessions, totp
-from evrima.auth.models import AccountLink, Administrator, TrustedDevice
+from evrima.auth import audit, credentials, emails, protect, sessions
+from evrima.auth.models import AccountLink, Administrator
 from evrima.auth.views import (EMAIL_PATTERN, INVITE_LIFETIME, RESET_LIFETIME, create_link,
                                normalise_email)
 from evrima.db import db, utcnow
@@ -37,12 +36,8 @@ def _me() -> Administrator:
 
 @bp.get("/account")
 def account():
-    """Profile, password, trusted devices and the authenticator app."""
-    me = _me()
-    devices = db.session.scalar(
-        select(func.count()).select_from(TrustedDevice)
-        .where(TrustedDevice.administrator_id == me.id, TrustedDevice.expires_at > utcnow()))
-    return render_template("evrima/admin/account/account.html", me=me, devices=devices)
+    """Profile and password."""
+    return render_template("evrima/admin/account/account.html", me=_me())
 
 
 @bp.post("/account/profile")
@@ -62,7 +57,7 @@ def save_profile():
 
 @bp.post("/account/password")
 def change_password():
-    """A new password ends every other session and forgets trusted devices."""
+    """A new password ends every other session."""
     me = _me()
     back = url_for("evrima_account.account")
     if not credentials.verify_password(me.password_hash, request.form.get("current", "")):
@@ -83,7 +78,7 @@ def change_password():
 
 @bp.post("/account/logout-everywhere")
 def logout_everywhere():
-    """End every other session and forget every trusted device."""
+    """End every other session."""
     me = _me()
     audit.record("sessions.ended", admin=me)
     return _restart_session(me, t("auth.account.logged_out_everywhere"))
@@ -96,56 +91,6 @@ def _restart_session(me: Administrator, message: str, target: str | None = None)
     response = redirect(target or url_for("evrima_account.account"))
     sessions.start_session(response, me)
     return response
-
-
-# --- Authenticator app (TOTP) ------------------------------------------------------
-
-@bp.route("/account/totp", methods=["GET", "POST"])
-def totp_setup():
-    """Show the QR code and key, then turn TOTP on after password and a valid code."""
-    me = _me()
-    if me.totp_enabled:
-        return redirect(url_for("evrima_account.account"))
-    secret = totp.decrypt(me.totp_pending_secret)
-    if secret is None:
-        secret = totp.new_secret()
-        me.totp_pending_secret = totp.encrypt(secret)
-        db.session.commit()
-
-    error = None
-    if request.method == "POST":
-        step = totp.matching_step(secret, request.form.get("code", ""), None)
-        if step is None or not credentials.verify_password(me.password_hash, request.form.get("password", "")):
-            error = t("auth.totp.wrong")
-        else:
-            me.totp_secret = me.totp_pending_secret
-            me.totp_pending_secret = None
-            me.totp_last_step = step
-            db.session.commit()
-            audit.record("totp.enabled", admin=me)
-            flash(t("auth.totp.enabled"), "success")
-            return redirect(url_for("evrima_account.account"))
-
-    uri = totp.provisioning_uri(secret, me.email, request.host.split(":")[0])
-    return render_template(
-        "evrima/admin/account/totp_setup.html", me=me, qr=totp.qr_svg(uri), uri=uri,
-        secret=" ".join(secret[i:i + 4] for i in range(0, len(secret), 4)), error=error)
-
-
-@bp.post("/account/totp/disable")
-def totp_disable():
-    """Turn TOTP off; needs the password and a current code."""
-    me = _me()
-    secret = totp.decrypt(me.totp_secret)
-    step = totp.matching_step(secret, request.form.get("code", ""), me.totp_last_step) if secret else None
-    if step is None or not credentials.verify_password(me.password_hash, request.form.get("password", "")):
-        return modal.reopen("totp-disable-form", t("auth.totp.wrong"), url_for("evrima_account.account"), form={})
-    me.totp_secret = None
-    me.totp_last_step = None
-    db.session.commit()
-    audit.record("totp.disabled", admin=me)
-    flash(t("auth.totp.disabled"), "success")
-    return redirect(url_for("evrima_account.account"))
 
 
 # --- Administrators -----------------------------------------------------------------

@@ -1,0 +1,58 @@
+{#- Skeleton of the cookies page (Czech). The framework lists its own cookies;
+    the website adds its own and third-party cookies in the blocks
+    `necessary_cookies` and `category_cookies` (the latter is rendered once per
+    consent category, with `category` set), e.g.
+      {% extends "evrima/legal/cookies.cs.html" %}
+      {% from "evrima/legal/_macros.html" import cookie_row %}
+      {% block category_cookies %}{% if category == "analytics" %}
+        {{ cookie_row("_ga", "Google", "Rozlišení návštěvníků v Google Analytics", "2 roky") }}
+      {% endif %}{% endblock %}
+    Indicative only; to be checked by a lawyer. -#}
+{% extends config.SITE_LAYOUT %}
+{% from "evrima/legal/_macros.html" import cookie_row %}
+{% block title %}Cookies{% endblock %}
+{% block content %}
+<article class="evrima-legal">
+  <h1>{% block legal_heading %}Cookies{% endblock %}</h1>
+  {% block legal_intro %}
+  <p>Cookies jsou malé soubory, které web ukládá do vašeho prohlížeče. Nezbytné cookies web potřebuje, aby fungoval, a&nbsp;nevyžadují souhlas.
+    {%- if consent_enabled %} Ostatní používáme jen s&nbsp;vaším souhlasem.{% endif %}</p>
+  {% endblock %}
+
+  {%- if consent_enabled %}
+  <p><a href="{{ consent_settings_url() }}" data-evrima-consent-open>{{ site_t("consent.link") }}</a></p>
+  {%- endif %}
+
+  <h2>{{ site_t("consent.category.necessary.name") }}</h2>
+  <table class="evrima-legal__cookies">
+    <thead><tr><th>Název</th><th>Kdo ji ukládá</th><th>Účel</th><th>Doba uložení</th></tr></thead>
+    <tbody>
+      {{ cookie_row(session_cookie, "tento web", "Ochrana formulářů proti podvržení; ukládá se jen na stránkách s formulářem", "do zavření prohlížeče") }}
+      {%- if consent_enabled %}
+      {{ cookie_row(consent_cookie, "tento web", "Zapamatování vaší volby v nastavení cookies", "12 měsíců") }}
+      {%- endif %}
+      {{ cookie_row(admin_cookie, "tento web", "Přihlášení do administrace; jen pro správce webu", "nejvýše 24 hodin") }}
+      {% block necessary_cookies %}{% endblock %}
+    </tbody>
+  </table>
+
+  {%- for category in consent_categories %}
+  <h2>{{ site_t("consent.category." ~ category ~ ".name") }}</h2>
+  <p>{{ site_t("consent.category." ~ category ~ ".description") }}</p>
+  <table class="evrima-legal__cookies">
+    <thead><tr><th>Název</th><th>Kdo ji ukládá</th><th>Účel</th><th>Doba uložení</th></tr></thead>
+    <tbody>
+      {%- if category == visitors_category %}
+      {{ cookie_row(visitor_cookie, "tento web", "Náhodný identifikátor pro rozpoznání opakované návštěvy ve statistikách návštěvnosti", "13 měsíců") }}
+      {%- endif %}
+      {% block category_cookies scoped %}{% endblock %}
+    </tbody>
+  </table>
+  {%- endfor %}
+
+  {% block legal_more %}
+  <p>Cookies můžete také kdykoli smazat nebo zablokovat v&nbsp;nastavení svého prohlížeče.
+    {%- if privacy_url %} Jak zpracováváme osobní údaje, popisují <a href="{{ privacy_url }}">zásady ochrany osobních údajů</a>.{% endif %}</p>
+  {% endblock %}
+</article>
+{% endblock %}

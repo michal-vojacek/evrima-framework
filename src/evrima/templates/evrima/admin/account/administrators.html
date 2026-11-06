@@ -15,7 +15,6 @@
       <thead><tr>
         <th>{{ t("auth.admins.person") }}</th>
         <th>{{ t("auth.admins.state") }}</th>
-        <th>{{ t("auth.totp.title") }}</th>
         <th>{{ t("auth.admins.last_login") }}</th>
         <th><span class="sr-only">{{ t("auth.admins.actions") }}</span></th>
       </tr></thead>
@@ -27,7 +26,6 @@
             {% if person.name %}<br><span class="muted small">{{ person.email }}</span>{% endif %}</td>
           <td data-label="{{ t('auth.admins.state') }}">{% if person.is_invited %}<span class="status status--planned">{{ t("auth.admins.invited") }}</span>
               {% else %}<span class="status status--ok">{{ t("auth.admins.active") }}</span>{% endif %}</td>
-          <td data-label="{{ t('auth.totp.title') }}">{{ t("auth.totp.on") if person.totp_enabled else t("auth.totp.off") }}</td>
           <td data-label="{{ t('auth.admins.last_login') }}">{% if person.last_login_at %}<time class="dt" datetime="{{ person.last_login_at.isoformat() }}Z">{{ person.last_login_at.strftime('%Y-%m-%d %H:%M') }}</time>{% else %}<span class="muted">{{ t("auth.account.never") }}</span>{% endif %}</td>
           <td class="actions">
             {{ open_button("edit-" ~ person.id, t("auth.admins.edit"), icon="pen", cls="btn--secondary") }}

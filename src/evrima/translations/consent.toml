@@ -1,0 +1,83 @@
+# Consent banner (evrima.consent). Shown to visitors in the website's language
+# (SITE_LANGUAGE), with site_t(). Indicative wording; to be checked by a lawyer
+# together with the website's privacy policy.
+
+[consent.banner.title]
+en = "Cookies on this website"
+cs = "Cookies na tomto webu"
+
+[consent.banner.text]
+en = "Cookies needed for the website to work are always on. Others we use only with your consent, which you can change at any time."
+cs = "Cookies nezbytné pro fungování webu jsou vždy zapnuté. Ostatní používáme jen s vaším souhlasem, který můžete kdykoli změnit."
+
+[consent.banner.more]
+en = "More about cookies"
+cs = "Více o cookies"
+
+[consent.banner.settings]
+en = "Settings"
+cs = "Nastavení"
+
+[consent.banner.save]
+en = "Save my choice"
+cs = "Uložit výběr"
+
+[consent.banner.reject_all]
+en = "Reject all"
+cs = "Odmítnout vše"
+
+[consent.banner.accept_all]
+en = "Accept all"
+cs = "Přijmout vše"
+
+[consent.always]
+en = "always on"
+cs = "vždy zapnuté"
+
+[consent.link]
+en = "Cookie settings"
+cs = "Nastavení cookies"
+
+[consent.settings.title]
+en = "Cookie settings"
+cs = "Nastavení cookies"
+
+[consent.settings.intro]
+en = "Choose which cookies this website may use. You can change your choice at any time."
+cs = "Vyberte, které cookies smí tento web používat. Svou volbu můžete kdykoli změnit."
+
+[consent.settings.saved]
+en = "Your choice has been saved."
+cs = "Vaše volba je uložená."
+
+[consent.category.necessary.name]
+en = "Necessary"
+cs = "Nezbytné"
+
+[consent.category.necessary.description]
+en = "Needed for the website to work, e.g. protecting forms and remembering this choice. They need no consent."
+cs = "Potřebné pro fungování webu, např. ochrana formulářů a zapamatování této volby. Nevyžadují souhlas."
+
+[consent.category.analytics.name]
+en = "Analytics"
+cs = "Analytické"
+
+[consent.category.analytics.description]
+en = "Help us understand how visitors use the website, so we can improve it."
+cs = "Pomáhají nám pochopit, jak návštěvníci web používají, abychom ho mohli zlepšovat."
+
+[consent.category.marketing.name]
+en = "Marketing"
+cs = "Marketingové"
+
+[consent.category.marketing.description]
+en = "Used to show relevant advertising and measure its effect, also on other websites."
+cs = "Slouží k zobrazování relevantní reklamy a měření jejího účinku, i na jiných webech."
+
+[consent.category.preferences.name]
+en = "Preferences"
+cs = "Preferenční"
+
+[consent.category.preferences.description]
+en = "Remember your settings, e.g. a chosen language or region."
+cs = "Pamatují si vaše nastavení, např. zvolený jazyk nebo region."

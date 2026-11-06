@@ -10,6 +10,7 @@ of failing on the first request that happens to need a missing value.
 import os
 from collections.abc import Mapping
 from typing import Any
+from urllib.parse import urlsplit
 
 from evrima.i18n import DEFAULT_LANGUAGE, LANGUAGES
 from evrima.mail import BACKENDS as MAIL_BACKENDS
@@ -34,6 +35,15 @@ DEFAULT_TRUSTED_PROXIES = {"production": 1, "development": 0, "testing": 0}
 # this only has to fit the largest allowed file (a 20 MB document) plus form
 # overhead, while nobody can tie up a worker by streaming gigabytes at it.
 DEFAULT_MAX_CONTENT_LENGTH = 25 * 1024 * 1024
+
+# What a request body may hold unless its view says otherwise with
+# `@security.body_limit(...)` (security audit 2026-11-06): a public form or the
+# login needs a few kilobytes, so slow 25 MB posts cannot keep the few server
+# threads busy. Admin pages get more, for long texts from the editor. The upload
+# endpoint and any website view that takes files raise the limit themselves,
+# never above MAX_CONTENT_LENGTH.
+DEFAULT_BODY_LIMIT = 64 * 1024
+DEFAULT_ADMIN_BODY_LIMIT = 1024 * 1024
 
 POSTGRES_SCHEMES = ("postgresql://", "postgresql+psycopg://")
 REDIS_SCHEMES = ("redis://", "rediss://", "unix://")
@@ -102,14 +112,17 @@ def load_config(
         "SITE_HOSTS": site_hosts,
         # Flask refuses requests for other hosts with 400 Bad Request.
         "TRUSTED_HOSTS": trusted_hosts,
-        "TELEMETRY_ENDPOINT": env.get("TELEMETRY_ENDPOINT", "").strip(),
+        # Telemetry (evrima/telemetry, protocol in the evrima-telemetry
+        # repository): empty endpoint = off; the token identifies the website.
+        "TELEMETRY_ENDPOINT": env.get("TELEMETRY_ENDPOINT", "").strip().rstrip("/"),
+        "TELEMETRY_TOKEN": env.get("TELEMETRY_TOKEN", "").strip(),
         # Where uploaded files are stored (evrima/media). Empty: the app's
         # instance folder. In production a Docker volume covered by backups.
         "MEDIA_ROOT": env.get("MEDIA_ROOT", "").strip(),
         # Admin language for users who have not chosen one yet.
         "ADMIN_DEFAULT_LANGUAGE": env.get("ADMIN_DEFAULT_LANGUAGE", DEFAULT_LANGUAGE).strip().lower(),
         # E-mail (evrima/mail). Production must deliver for real: the console
-        # backend would write login PINs into the log.
+        # backend would write password reset links into the log.
         "MAIL_BACKEND": env.get("MAIL_BACKEND", "").strip().lower()
         or MAIL_DEFAULT_BACKEND.get(environment, "smtp"),
         "MAIL_SENDER": env.get("MAIL_SENDER", "").strip(),
@@ -119,6 +132,8 @@ def load_config(
         "SMTP_USERNAME": env.get("SMTP_USERNAME", "").strip(),
         "SMTP_PASSWORD": env.get("SMTP_PASSWORD", ""),
         "MAX_CONTENT_LENGTH": DEFAULT_MAX_CONTENT_LENGTH,
+        "BODY_LIMIT": DEFAULT_BODY_LIMIT,
+        "ADMIN_BODY_LIMIT": DEFAULT_ADMIN_BODY_LIMIT,
         "PREFERRED_URL_SCHEME": "https" if production else "http",
         # The development server runs on plain http://localhost, where a
         # Secure cookie would not be sent back and every form would fail.
@@ -140,6 +155,26 @@ def load_config(
         # Extra Content-Security-Policy sources per directive, e.g.
         # {"img-src": ["https://maps.example.com"]}. See security/headers.py.
         "CSP": {},
+        # Website decisions, passed to create_app as overrides (docs/framework.md,
+        # "Consent banner" and "Legal pages"):
+        # the language of the framework's public texts (consent banner, legal
+        # page skeletons, fallback error page) ...
+        "SITE_LANGUAGE": DEFAULT_LANGUAGE,
+        # ... the website's layout that the framework's public pages extend
+        # (they fill its `title` and `content` blocks) ...
+        "SITE_LAYOUT": "base.html",
+        # ... consent categories besides the always allowed necessary cookies,
+        # e.g. ["analytics", "marketing"]; empty: no consent banner ...
+        "CONSENT_CATEGORIES": [],
+        # ... raised when the website starts using something new, so every
+        # visitor is asked again ...
+        "CONSENT_VERSION": 1,
+        # ... legal pages served by the framework: a list of pages with
+        # default addresses, or {page: address} ...
+        "LEGAL_PAGES": [],
+        # ... and telemetry level 2: the consent category that allows the
+        # visitor cookie, e.g. "analytics"; empty: level 1 only.
+        "TELEMETRY_VISITORS": "",
     }
     if overrides:
         config.update(overrides)
@@ -148,6 +183,75 @@ def load_config(
     if problems:
         raise ConfigError(problems)
     return config
+
+
+def _telemetry_endpoint_problems(endpoint: str, production: bool) -> list[str]:
+    """Problems of TELEMETRY_ENDPOINT, which receives the website's token with every batch.
+
+    The address is parsed, not searched for substrings: "://localhost" in
+    `http://localhost.attacker.example` once let plain HTTP through (code review
+    2026-11-06). No user name, password, query or fragment: the base address
+    gets `/v1/ingest` appended and must stay exactly that.
+    """
+    try:
+        parts = urlsplit(endpoint)
+        parts.port                            # raises ValueError for a malformed port
+    except ValueError:
+        return ["TELEMETRY_ENDPOINT is not a valid address."]
+    if parts.scheme not in ("https", "http") or not parts.hostname:
+        return ["TELEMETRY_ENDPOINT must be an http:// or https:// address."]
+    if parts.username is not None or parts.password is not None or parts.query or parts.fragment:
+        return ["TELEMETRY_ENDPOINT must be a plain address, without a user name, query or fragment."]
+    if production and parts.scheme != "https" and parts.hostname not in LOCAL_HOSTS:
+        # The token travels in every request; outside the local host it must
+        # not go over plain HTTP.
+        return ["TELEMETRY_ENDPOINT must use https:// in production."]
+    return []
+
+
+def _public_problems(config: Mapping[str, Any]) -> list[str]:
+    """Problems of the website's public settings: language, consent, legal pages, telemetry level 2."""
+    from evrima.consent import CATEGORY_NAME
+    from evrima.legal import PAGES
+
+    problems: list[str] = []
+    if config.get("SITE_LANGUAGE") not in LANGUAGES:
+        problems.append(f"SITE_LANGUAGE must be one of {', '.join(LANGUAGES)}.")
+    if not isinstance(config.get("SITE_LAYOUT"), str) or not config.get("SITE_LAYOUT"):
+        problems.append("SITE_LAYOUT must be the name of the website's layout template, e.g. base.html.")
+
+    categories = config.get("CONSENT_CATEGORIES")
+    if not isinstance(categories, (list, tuple)) or not all(isinstance(c, str) for c in categories):
+        problems.append("CONSENT_CATEGORIES must be a list of category names, e.g. [\"analytics\"].")
+        categories = []
+    for category in categories:
+        if category == "necessary":
+            problems.append("CONSENT_CATEGORIES must not list necessary: necessary cookies need no consent.")
+        elif not CATEGORY_NAME.match(category):
+            problems.append(f"CONSENT_CATEGORIES: {category!r} must be lower-case letters, digits and _.")
+    if len(set(categories)) != len(categories):
+        problems.append("CONSENT_CATEGORIES lists a category twice.")
+    version = config.get("CONSENT_VERSION")
+    if isinstance(version, bool) or not isinstance(version, int) or version < 1:
+        problems.append("CONSENT_VERSION must be a positive whole number.")
+
+    pages = config.get("LEGAL_PAGES")
+    names = list(pages) if isinstance(pages, (list, tuple, dict)) else None
+    if names is None:
+        problems.append("LEGAL_PAGES must be a list of pages or a {page: address} mapping.")
+    else:
+        for name in names:
+            if name not in PAGES:
+                problems.append(f"LEGAL_PAGES: unknown page {name!r} (known: {', '.join(PAGES)}).")
+        if isinstance(pages, dict):
+            for name, address in pages.items():
+                if not isinstance(address, str) or not address.startswith("/"):
+                    problems.append(f"LEGAL_PAGES: the address of {name!r} must start with /.")
+
+    visitors = config.get("TELEMETRY_VISITORS") or ""
+    if visitors and visitors not in categories:
+        problems.append("TELEMETRY_VISITORS must be one of CONSENT_CATEGORIES: the visitor cookie needs consent.")
+    return problems
 
 
 def validate_config(config: Mapping[str, Any]) -> list[str]:
@@ -206,6 +310,14 @@ def validate_config(config: Mapping[str, Any]) -> list[str]:
             problems.append("MAIL_SENDER is missing.")
         if config.get("SMTP_SECURITY") not in MAIL_SECURITY_MODES:
             problems.append(f"SMTP_SECURITY must be one of {', '.join(MAIL_SECURITY_MODES)}.")
+
+    problems.extend(_public_problems(config))
+
+    endpoint = config.get("TELEMETRY_ENDPOINT") or ""
+    if endpoint:
+        problems.extend(_telemetry_endpoint_problems(endpoint, production))
+        if not config.get("TELEMETRY_TOKEN"):
+            problems.append("TELEMETRY_TOKEN is missing: the website's token from the telemetry collector.")
 
     return problems
 

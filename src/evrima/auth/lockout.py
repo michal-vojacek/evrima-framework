@@ -1,7 +1,7 @@
 """Temporary lockout after repeated failed logins.
 
-After 10 failures (wrong password or wrong PIN/TOTP code) for the same e-mail
-from the same IP address, logging in is blocked for 40 minutes counted from
+After 10 wrong passwords for the same e-mail
+from the same IP address (an IPv6 /64 counts as one address), logging in is blocked for 40 minutes counted from
 the last failure. Counting per e-mail *and* IP means a stranger who knows the
 e-mail cannot lock the real owner out (docs/framework.md, decided 2026-10-14).
 The counters live in the database, not in Redis.
@@ -10,11 +10,12 @@ The counters live in the database, not in Redis.
 import hashlib
 from datetime import datetime, timedelta
 
-from flask import current_app, request
+from flask import current_app
 from sqlalchemy import select
 
 from evrima.auth.models import LoginFailure
 from evrima.db import db, utcnow
+from evrima.security import client_key
 
 MAX_FAILURES = 10
 LOCKOUT = timedelta(minutes=40)
@@ -23,7 +24,7 @@ LOCKOUT = timedelta(minutes=40)
 def _key(email: str) -> str:
     """A hash of e-mail and client IP; the table keeps no readable addresses."""
     secret = current_app.config["SECRET_KEY"]
-    raw = f"{secret}|{email.strip().lower()}|{request.remote_addr or ''}"
+    raw = f"{secret}|{email.strip().lower()}|{client_key()}"
     return hashlib.sha256(raw.encode()).hexdigest()
 
 

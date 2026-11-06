@@ -14,7 +14,7 @@ def record(action: str, *, admin: Administrator | None = None, email: str = "", 
     """Write one entry and commit it.
 
     `action` is a short machine-readable name such as "login" or
-    "totp.enabled"; `detail` is free text for people.
+    "password.changed"; `detail` is free text for people.
     """
     db.session.add(AuditEntry(
         administrator_id=admin.id if admin else None,

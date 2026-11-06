@@ -1,17 +1,14 @@
-"""Admin login: password, PIN, trusted devices, lockout, sessions, reset, TOTP, administrators."""
+"""Admin login: password, lockout, sessions, reset, administrators."""
 
 import re
 from datetime import timedelta
 
-import pyotp
 import pytest
 from sqlalchemy import select
 
-from conftest import (ADMIN_EMAIL, ADMIN_PASSWORD, add_admin, csrf_token, https_client,
-                      last_pin, log_in)
+from conftest import ADMIN_EMAIL, ADMIN_PASSWORD, add_admin, csrf_token, https_client, log_in
 from evrima import mail
-from evrima.auth import totp
-from evrima.auth.models import AdminSession, Administrator, AuditEntry, LoginChallenge
+from evrima.auth.models import AdminSession, Administrator, AuditEntry
 from evrima.db import db, utcnow
 
 NEW_PASSWORD = "a brand new long password"
@@ -47,7 +44,7 @@ def account(app):
     return https_client(app)
 
 
-# --- Password step ----------------------------------------------------------------------
+# --- Login ----------------------------------------------------------------------
 
 def test_wrong_password_is_refused_without_revealing_accounts(app, account):
     token = csrf_token(account)
@@ -60,47 +57,24 @@ def test_wrong_password_is_refused_without_revealing_accounts(app, account):
     assert audit_actions(app).count("login.failed") == 2
 
 
-def test_full_login_sets_strict_cookies(app, account):
+def test_login_with_the_password_alone_sets_a_strict_cookie(app, account):
+    """Password-only login (decided 2026-11-06): no e-mailed code, no device cookie."""
     response = log_in(app, account)
-    assert response.status_code == 302
+    assert response.status_code == 302 and response.headers["Location"] == "/admin/"
     session_cookie = cookie(response, "evrima_admin")
-    device_cookie = cookie(response, "evrima_device")
-    for header in (session_cookie, device_cookie):
-        assert "HttpOnly" in header and "Secure" in header and "Path=/admin" in header
+    assert "HttpOnly" in session_cookie and "Secure" in session_cookie and "Path=/admin" in session_cookie
     assert "SameSite=Lax" in session_cookie
-    assert "SameSite=Strict" in device_cookie
+    assert "evrima_device" not in str(response.headers)
+    assert outbox(app) == []
     assert account.get("/admin/").status_code == 200
     assert "login" in audit_actions(app)
-
-
-def test_pin_email_carries_the_warning_and_no_pin_in_subject(app, account):
-    token = csrf_token(account)
-    account.post("/admin/login", data={"csrf_token": token, "email": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
-    message = outbox(app)[-1]
-    pin = last_pin(app)
-    assert pin not in message["Subject"]
-    body = message.get_content()
-    assert "někdo zná vaše heslo" in body
-    assert "/admin/password/forgot" in body
-
-
-def test_trusted_device_skips_the_pin(app, account):
-    log_in(app, account)
-    token = csrf_token(account, "/admin/")
-    account.post("/admin/logout", data={"csrf_token": token})
-    sent = len(outbox(app))
-    response = account.post("/admin/login", data={
-        "csrf_token": csrf_token(account), "email": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
-    assert response.headers["Location"] == "/admin/"
-    assert len(outbox(app)) == sent          # no new PIN e-mail
+    assert account.get("/admin/login/verify").status_code == 404
 
 
 def test_login_returns_to_the_requested_page(app, account):
     assert "next=/admin/account" in account.get("/admin/account").headers["Location"]
-    token = csrf_token(account)
-    account.post("/admin/login", data={
-        "csrf_token": token, "email": ADMIN_EMAIL, "password": ADMIN_PASSWORD, "next": "/admin/account"})
-    response = account.post("/admin/login/verify", data={"csrf_token": token, "method": "pin", "code": last_pin(app)})
+    response = account.post("/admin/login", data={
+        "csrf_token": csrf_token(account), "email": ADMIN_EMAIL, "password": ADMIN_PASSWORD, "next": "/admin/account"})
     assert response.headers["Location"] == "/admin/account"
 
 
@@ -118,96 +92,6 @@ def test_lockout_after_ten_failures_per_email_and_ip(app, account):
     owner = https_client(app)
     owner.environ_base["REMOTE_ADDR"] = "203.0.113.9"
     assert log_in(app, owner).status_code == 302
-
-
-# --- PIN step ---------------------------------------------------------------------------
-
-def start_login(app, client):
-    """Submit the password and return the CSRF token for the next step."""
-    token = csrf_token(client)
-    client.post("/admin/login", data={"csrf_token": token, "email": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
-    return token
-
-
-def test_five_wrong_pins_burn_the_challenge(app, account):
-    token = start_login(app, account)
-    pin = last_pin(app)
-    wrong = "000000" if pin != "000000" else "111111"
-    for _ in range(5):
-        account.post("/admin/login/verify", data={"csrf_token": token, "method": "pin", "code": wrong})
-    response = account.post("/admin/login/verify", data={"csrf_token": token, "method": "pin", "code": pin})
-    assert response.status_code == 200
-    assert "Příliš mnoho chybných kódů" in response.get_data(as_text=True)
-
-
-def test_expired_pin_is_refused(app, account):
-    token = start_login(app, account)
-    with app.app_context():
-        challenge = db.session.scalars(select(LoginChallenge)).one()
-        challenge.expires_at = utcnow() - timedelta(seconds=1)
-        db.session.commit()
-    response = account.post("/admin/login/verify", data={"csrf_token": token, "method": "pin", "code": last_pin(app)})
-    assert response.status_code == 302 and response.headers["Location"].endswith("/admin/login")
-    assert "evrima_admin=" not in str(response.headers)
-    # An expired pending login cannot ask for new codes either.
-    resend = account.post("/admin/login/resend", data={"csrf_token": token})
-    assert resend.headers["Location"].endswith("/admin/login")
-    assert len(outbox(app)) == 1
-
-
-def test_password_change_cancels_a_pending_login(app, account):
-    """A browser that knew the old password cannot finish the login after a reset."""
-    from evrima.auth import sessions
-
-    token = start_login(app, account)
-    pin = last_pin(app)
-    with app.app_context():
-        sessions.end_all(admin(app))
-    response = account.post("/admin/login/verify", data={"csrf_token": token, "method": "pin", "code": pin})
-    assert response.headers["Location"].endswith("/admin/login")
-    assert "evrima_admin=" not in str(response.headers)
-
-
-def test_wrong_totp_codes_burn_the_challenge(app):
-    """TOTP guesses are counted per pending login, not only per IP address."""
-    secret = pyotp.random_base32()
-    with app.app_context():
-        stored = totp.encrypt(secret)
-    add_admin(app, totp_secret=stored)
-    browser = https_client(app)
-    token = start_login(app, browser)
-    good = pyotp.TOTP(secret).now()
-    wrong = "000000" if good != "000000" else "111111"
-    for _ in range(5):
-        browser.post("/admin/login/verify", data={"csrf_token": token, "method": "totp", "code": wrong})
-    response = browser.post("/admin/login/verify", data={"csrf_token": token, "method": "totp", "code": good})
-    assert response.status_code == 200
-    assert "Příliš mnoho chybných kódů" in response.get_data(as_text=True)
-    assert audit_actions(app).count("login.totp_failed") == 5
-
-
-def test_codes_per_hour_are_limited(app, account):
-    """Asking for new codes cannot hand out fresh attempts without end."""
-    token = start_login(app, account)
-    for _ in range(4):
-        account.post("/admin/login/resend", data={"csrf_token": token})
-    assert len(outbox(app)) == 5
-    refused = account.post("/admin/login/resend", data={"csrf_token": token}, follow_redirects=True)
-    assert "příliš mnoho kódů" in refused.get_data(as_text=True)
-    assert len(outbox(app)) == 5
-    assert "login.too_many_codes" in audit_actions(app)
-
-
-def test_resend_replaces_the_pin(app, account):
-    token = start_login(app, account)
-    first = last_pin(app)
-    account.post("/admin/login/resend", data={"csrf_token": token})
-    second = last_pin(app)
-    if first != second:
-        refused = account.post("/admin/login/verify", data={"csrf_token": token, "method": "pin", "code": first})
-        assert refused.status_code == 200
-    accepted = account.post("/admin/login/verify", data={"csrf_token": token, "method": "pin", "code": second})
-    assert accepted.status_code == 302
 
 
 # --- Sessions -----------------------------------------------------------------------------
@@ -311,54 +195,6 @@ def test_remove_others_but_not_yourself(app, admin_client):
     assert admin(app) is not None
     admin_client.post(f"/admin/administrators/{other_id}/remove", data={"csrf_token": token})
     assert admin(app, "other@example.com") is None
-
-
-# --- TOTP ---------------------------------------------------------------------------------------
-
-def test_totp_setup_and_login_with_code(app, admin_client):
-    admin_client.get("/admin/account/totp")
-    with app.app_context():
-        secret = totp.decrypt(admin(app).totp_pending_secret)
-    token = csrf_token(admin_client, "/admin/account/totp")
-    refused = admin_client.post("/admin/account/totp", data={
-        "csrf_token": token, "code": "000000", "password": ADMIN_PASSWORD})
-    assert "Heslo nebo kód není správný." in refused.get_data(as_text=True)
-
-    admin_client.post("/admin/account/totp", data={
-        "csrf_token": token, "code": pyotp.TOTP(secret).now(), "password": ADMIN_PASSWORD})
-    assert admin(app).totp_enabled
-    assert "totp.enabled" in audit_actions(app)
-
-    # A new browser logs in with the app instead of the PIN and gets a notice
-    # by e-mail. The clock moves one step on: the setup code is already spent.
-    browser = https_client(app)
-    browser.environ_base["REMOTE_ADDR"] = "198.51.100.7"
-    login_token = start_login(app, browser)
-    later = totp._now() + timedelta(seconds=30)
-    code = pyotp.TOTP(secret).at(later)
-    original_now = totp._now
-    totp._now = lambda: later
-    try:
-        response = browser.post("/admin/login/verify", data={"csrf_token": login_token, "method": "totp", "code": code})
-        assert response.status_code == 302
-        assert "ověřovací aplikac" in outbox(app)[-1]["Subject"]
-
-        # The same code cannot be used twice.
-        again = https_client(app)
-        again.environ_base["REMOTE_ADDR"] = "198.51.100.8"
-        token2 = start_login(app, again)
-        replay = again.post("/admin/login/verify", data={"csrf_token": token2, "method": "totp", "code": code})
-        assert replay.status_code == 200
-    finally:
-        totp._now = original_now
-
-
-def test_totp_secret_is_stored_encrypted(app, admin_client):
-    admin_client.get("/admin/account/totp")
-    stored = admin(app).totp_pending_secret
-    with app.app_context():
-        secret = totp.decrypt(stored)
-    assert secret and secret not in stored
 
 
 # --- Command line ---------------------------------------------------------------------------------

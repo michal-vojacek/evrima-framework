@@ -1,35 +1,30 @@
-"""Logged-in browsers and trusted devices, both kept on the server.
+"""Logged-in browsers, kept on the server.
 
-Two cookies, both limited to /admin, HttpOnly, and Secure outside development:
-
-- `evrima_admin`: the login session. Ends after 2 hours of inactivity and
-  after 24 hours at most (docs/framework.md, decided 2026-10-14). Stored on
-  the server, so it can be ended remotely (logout everywhere, password change).
-- `evrima_device`: a trusted device. After a verified PIN or TOTP code, the
-  browser needs no PIN for 10 days. SameSite=Strict: it is never sent along
-  with a request started on another website.
+The cookie `evrima_admin` is the login session: limited to /admin, HttpOnly,
+Secure outside development, SameSite=Lax. It ends after 2 hours of inactivity
+and after 24 hours at most (docs/framework.md, decided 2026-10-14), and is
+stored on the server, so it can be ended remotely (logout everywhere, password
+change).
 
 Flask's own session cookie keeps only harmless state (language, flash
-messages, the CSRF token, the pending login step).
+messages, the CSRF token).
 """
 
 from datetime import timedelta
 
 from flask import current_app, g, request
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, select
 from werkzeug.wrappers.response import Response
 
 from evrima.auth import credentials
-from evrima.auth.models import AdminSession, Administrator, LoginChallenge, TrustedDevice
+from evrima.auth.models import AdminSession, Administrator
 from evrima.db import db, utcnow
 
 SESSION_COOKIE = "evrima_admin"
-DEVICE_COOKIE = "evrima_device"
 COOKIE_PATH = "/admin"
 
 SESSION_IDLE = timedelta(hours=2)
 SESSION_MAX_AGE = timedelta(hours=24)
-DEVICE_LIFETIME = timedelta(days=10)
 # last_seen_at is written at most this often, not on every click.
 TOUCH_INTERVAL = timedelta(minutes=1)
 
@@ -64,14 +59,12 @@ def _load_session() -> Administrator | None:
 def start_session(response: Response, admin: Administrator) -> None:
     """Log `admin` in on this browser: a new session row and its cookie.
 
-    Expired sessions and devices of the same administrator are removed on the
-    way, so the tables do not grow forever.
+    Expired sessions of the same administrator are removed on the way (the
+    daily cleanup removes the rest).
     """
     now = utcnow()
     db.session.execute(delete(AdminSession).where(
         AdminSession.administrator_id == admin.id, AdminSession.created_at < now - SESSION_MAX_AGE))
-    db.session.execute(delete(TrustedDevice).where(
-        TrustedDevice.administrator_id == admin.id, TrustedDevice.expires_at < now))
     token = credentials.new_token()
     db.session.add(AdminSession(
         token_hash=credentials.token_hash(token), administrator_id=admin.id,
@@ -94,43 +87,9 @@ def end_session(response: Response) -> None:
 
 
 def end_all(admin: Administrator) -> None:
-    """End every session, pending login and trusted device of `admin` (e.g. after a password change).
-
-    Closing the open challenges matters: a pending login only needs its
-    challenge, so without this a browser that knew the old password could
-    still finish logging in with a code.
-    """
+    """End every session of `admin` (e.g. after a password change)."""
     db.session.execute(delete(AdminSession).where(AdminSession.administrator_id == admin.id))
-    db.session.execute(
-        update(LoginChallenge)
-        .where(LoginChallenge.administrator_id == admin.id, LoginChallenge.used_at.is_(None))
-        .values(used_at=utcnow()))
-    db.session.execute(delete(TrustedDevice).where(TrustedDevice.administrator_id == admin.id))
     db.session.commit()
-
-
-def trusted_device(admin: Administrator) -> TrustedDevice | None:
-    """The valid trusted device of `admin` behind this browser's cookie, if any."""
-    token = request.cookies.get(DEVICE_COOKIE)
-    if not token:
-        return None
-    device = db.session.scalar(
-        select(TrustedDevice).where(TrustedDevice.token_hash == credentials.token_hash(token)))
-    if device is None or device.administrator_id != admin.id or device.expires_at < utcnow():
-        return None
-    device.last_used_at = utcnow()
-    db.session.commit()
-    return device
-
-
-def remember_device(response: Response, admin: Administrator) -> None:
-    """Trust this browser for `admin` for the next 10 days."""
-    token = credentials.new_token()
-    db.session.add(TrustedDevice(
-        token_hash=credentials.token_hash(token), administrator_id=admin.id,
-        expires_at=utcnow() + DEVICE_LIFETIME, user_agent=_user_agent()))
-    db.session.commit()
-    _set_cookie(response, DEVICE_COOKIE, token, max_age=DEVICE_LIFETIME, samesite="Strict")
 
 
 def _set_cookie(response: Response, name: str, value: str, max_age: timedelta, samesite: str) -> None:
@@ -141,7 +100,7 @@ def _set_cookie(response: Response, name: str, value: str, max_age: timedelta, s
 
 
 def _user_agent() -> str:
-    """A short description of the browser, shown in the list of devices."""
+    """A short description of the browser, kept with the session."""
     return (request.user_agent.string or "")[:200]
 
 

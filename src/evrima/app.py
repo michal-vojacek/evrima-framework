@@ -13,7 +13,8 @@ from typing import Any
 from flask import Blueprint, Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from evrima import admin, auth, cli, editor, errors, health, i18n, mail, media, redis_client, security
+from evrima import (admin, auth, cli, consent, editor, errors, health, i18n, legal, mail, media, redis_client,
+                    security, seo, static_files, telemetry)
 from evrima.config import load_config
 from evrima.db import db, migrations
 from evrima.media import views as media_views
@@ -74,6 +75,11 @@ def create_app(
 
     app.register_blueprint(framework)
     app.register_blueprint(health.bp)
+    telemetry.init_app(app)
+    consent.init_app(app)
+    legal.init_app(app)
+    static_files.init_app(app)
+    seo.init_app(app)
     auth.init_app(app)
     admin.init_app(app)
     app.register_blueprint(media_views.public)

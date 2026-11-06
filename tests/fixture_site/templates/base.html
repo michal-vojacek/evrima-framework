@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="{{ config.SITE_LANGUAGE }}">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}Fixture site{% endblock %}</title>
+  {{ consent_head() }}
+</head>
+<body>
+  <main>{% block content %}{% endblock %}</main>
+  <footer>{% if consent_settings_url() %}<a href="{{ consent_settings_url() }}" data-evrima-consent-open>{{ site_t("consent.link") }}</a>{% endif %}</footer>
+  {{ consent_banner() }}
+  {{ telemetry_script() }}
+</body>
+</html>

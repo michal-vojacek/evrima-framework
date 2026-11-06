@@ -10,7 +10,8 @@ So a website overrides error pages simply by adding templates, without
 registering handlers of its own.
 """
 
-from flask import Flask, render_template
+from flask import Flask, Response, render_template
+from flask.globals import request_ctx
 from werkzeug.exceptions import HTTPException, InternalServerError
 
 # The errors a visitor can realistically run into. Anything else falls through
@@ -31,5 +32,12 @@ def _render_error(error: HTTPException):
         # calling the 500 handler; this only guards the template, which needs
         # code, name and description, against anything else slipping through.
         error = InternalServerError()
+    if request_ctx.url_adapter is None:
+        # The request never reached routing, typically a Host outside
+        # SITE_HOSTS (a scanner, or upper case: Caddy matches hosts without
+        # regard to case, Flask does not). The website's error page calls
+        # url_for, which cannot work here, and used to turn every such 400 into
+        # a bare 500 with two tracebacks (security audit 2026-11-06).
+        return Response(f"{error.code} {error.name}", error.code, mimetype="text/plain")
     templates = [f"errors/{error.code}.html", "errors/error.html", "evrima/errors/error.html"]
     return render_template(templates, error=error), error.code

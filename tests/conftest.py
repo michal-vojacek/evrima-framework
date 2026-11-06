@@ -90,21 +90,10 @@ def csrf_token(client, path="/admin/login"):
     return re.search(r'name="csrf-token" content="([^"]+)"', html).group(1)
 
 
-def last_pin(app):
-    """The PIN from the last e-mail in the outbox."""
-    with app.app_context():
-        body = mail.outbox()[-1].get_content()
-    return re.search(r"\b(\d{6})\b", body).group(1)
-
-
 def log_in(app, client, email=ADMIN_EMAIL, password=ADMIN_PASSWORD):
-    """Go through the whole login (password, then the e-mailed PIN)."""
-    token = csrf_token(client)
-    response = client.post("/admin/login", data={"csrf_token": token, "email": email, "password": password})
-    if response.headers.get("Location", "").endswith("/admin/login/verify"):
-        response = client.post("/admin/login/verify", data={
-            "csrf_token": token, "method": "pin", "code": last_pin(app)})
-    return response
+    """Log in with e-mail and password."""
+    return client.post("/admin/login", data={
+        "csrf_token": csrf_token(client), "email": email, "password": password})
 
 
 @pytest.fixture

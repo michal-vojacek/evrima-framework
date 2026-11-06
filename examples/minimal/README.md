@@ -21,4 +21,4 @@ Before the first start, create the database tables and the first administrator:
 ..\..\.venv\Scripts\flask --app minimal_site evrima create-admin you@example.com --name "Your Name"
 ```
 
-The admin is at `/admin`. In development the login PIN is printed to the server's console instead of being e-mailed.
+The admin is at `/admin`. In development e-mails (password reset links, invitations) are printed to the server's console instead of being sent.

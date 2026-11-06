@@ -114,3 +114,43 @@ def test_forged_extra_hop_does_not_win(make_app):
     response = client.get(
         "/probe/ip", headers={"X-Forwarded-For": "198.51.100.1, 203.0.113.7"})
     assert response.get_data(as_text=True) == "203.0.113.7"
+
+
+def test_the_client_key_groups_an_ipv6_slash_64(app):
+    from evrima.security import client_key
+
+    cases = {"203.0.113.7": "203.0.113.7", "2001:db8:1:2:aaaa::1": "2001:db8:1:2::/64",
+             "2001:db8:1:2:ffff:ffff:ffff:ffff": "2001:db8:1:2::/64", "::ffff:198.51.100.4": "198.51.100.4",
+             "": ""}
+    for address, key in cases.items():
+        with app.test_request_context(environ_base={"REMOTE_ADDR": address}):
+            assert client_key() == key
+
+
+def test_request_bodies_are_limited_per_view(make_app):
+    """64 KB for public forms, 1 MB for the admin, more only where a view asks for it."""
+    from flask import Blueprint, request
+
+    from evrima.security import body_limit, csrf
+
+    probe = Blueprint("body_probe", __name__)
+
+    @probe.post("/form")
+    @csrf.exempt
+    def form():
+        return str(len(request.get_data()))
+
+    @probe.post("/attachment")
+    @csrf.exempt
+    @body_limit(2 * 1024 * 1024)
+    def attachment():
+        return str(len(request.get_data()))
+
+    app = make_app(blueprints=[probe])
+    client = app.test_client()
+    small, large = b"x" * (60 * 1024), b"x" * (100 * 1024)
+    assert client.post("/form", data={"text": small.decode()}).status_code == 200
+    assert client.post("/form", data={"text": large.decode()}).status_code == 413
+    assert client.post("/attachment", data={"text": large.decode()}).status_code == 200
+    assert client.post("/attachment", data=b"x" * (3 * 1024 * 1024),
+                       content_type="application/octet-stream").status_code == 413
