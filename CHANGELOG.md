@@ -2,6 +2,12 @@
 
 Every release states what changed and whether websites need any change. Versioning rules: [docs/framework.md](docs/framework.md).
 
+## 1.0.0 (2026-11-06)
+
+The first production version, for the launch of weby-vojacek.cz. The code is the same as in 0.1.0; from this version on an incompatible change comes only in a new MAJOR version.
+
+- Websites need changes: set `EVRIMA_VERSION=1.0.0`.
+
 ## 0.1.0 (2026-11-06)
 
 The first release, for testing the deploy (versions 0.x are development releases, docs/framework.md, "Versioning rules"). It contains:

@@ -48,7 +48,7 @@ Binding rules:
 - The package version is derived from the Git tag automatically, so the two cannot drift apart.
 - Every release has an entry in `CHANGELOG.md`: what changed and whether websites need any change.
 - Release tags are **protected** (on GitHub: a tag ruleset forbidding updates and deletion of `v*` tags), so a released version cannot be moved to other code or deleted (decided 2026-10-14; ruleset "release tags" active since 2026-11-06: no updates, deletions or force pushes of `v*` tags, empty bypass list, creation allowed). Tag signatures are not verified.
-- Versions `0.x.y` cover development before the first production deployment; during that time incompatible changes may also appear in `MINOR`. The first production version `1.0.0` is released together with the launch of weby-vojacek.cz.
+- `1.0.0` (2026-11-06) is the first production version, released for the launch of weby-vojacek.cz (decided by Michal on 2026-11-06). The only earlier release, `0.1.0`, has the same code apart from the changelog.
 
 ## Responsibilities
 
