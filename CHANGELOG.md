@@ -2,14 +2,14 @@
 
 Every release states what changed and whether websites need any change. Versioning rules: [docs/framework.md](docs/framework.md).
 
-## 1.1.0 (not released yet)
+## 1.1.0 (2026-11-15)
 
 Telemetry doubles as monitoring: a running website reaches the collector at least every five minutes, even when nobody visits it.
 
 - The telemetry shipper adds an `alive` event (just `t` and `at`) when the collector has accepted no batch for 4 minutes and nothing is waiting to be sent. The shipper runs every minute, so a batch arrives at most every 5 minutes. Real events count as a sign of life too, so a busy website sends no extra signal. The signal is not reported as sent data (`flask evrima telemetry ship` does not count it) and the browser beacon never accepts it.
 - The collector treats a website with no batch for more than 12 minutes (was 30) as down and raises its "No data" alert (`COLLECTOR_ALERT_SILENT_MINUTES`).
 - **Order of deployment:** the collector that knows the `alive` event (protocol of 2026-11-15) must run before a website upgrades to this version. An older collector answers `400` to a batch with an unknown event, and the shipper drops that batch.
-- Websites need changes: no. Set a new `EVRIMA_VERSION` once this is released; nothing in a website's code or configuration changes.
+- Websites need changes: no. Set a new `EVRIMA_VERSION` (after the collector is updated, see above); nothing in a website's code or configuration changes.
 
 ## 1.0.1 (2026-11-15)
 

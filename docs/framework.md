@@ -49,6 +49,7 @@ Binding rules:
 - Every release has an entry in `CHANGELOG.md`: what changed and whether websites need any change.
 - Release tags are **protected** (on GitHub: a tag ruleset forbidding updates and deletion of `v*` tags), so a released version cannot be moved to other code or deleted (decided 2026-10-14; ruleset "release tags" active since 2026-11-06: no updates, deletions or force pushes of `v*` tags, empty bypass list, creation allowed). Tag signatures are not verified.
 - `1.0.0` (2026-11-06) is the first production version, released for the launch of weby-vojacek.cz (decided by Michal on 2026-11-06). The only earlier release, `0.1.0`, has the same code apart from the changelog.
+- `1.1.0` (2026-11-15) is a MINOR release, released for the telemetry `alive` signal that lets telemetry double as monitoring (decided by Michal on 2026-11-15).
 - `1.0.1` (2026-11-15) is a PATCH release, released to fix the values the telemetry shipper sends (decided by Michal on 2026-11-15); it also brings the documentation up to date.
 
 ## Responsibilities
