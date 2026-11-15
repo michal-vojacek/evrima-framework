@@ -488,3 +488,46 @@ def test_withdrawn_consent_deletes_the_visitor_cookie(level2_app):
 def test_level2_needs_a_consent_category(make_app):
     with pytest.raises(ConfigError, match="TELEMETRY_VISITORS"):
         make_app(env=ON, TELEMETRY_VISITORS="analytics")
+
+
+def test_a_quiet_website_sends_an_alive_signal_and_then_waits(ship_app, monkeypatch):
+    """Nothing to report is still a batch every few minutes, so silence means an outage."""
+    batches = []
+    monkeypatch.setattr(ship, "post", lambda data: batches.append(json.loads(gzip.decompress(data))) or 202)
+    clock = [1_000_000.0]
+    monkeypatch.setattr(ship.time, "time", lambda: clock[0])
+    with ship_app.test_request_context():
+        assert ship.ship() == 0                      # the signal is not data
+        assert [e["t"] for e in batches[0]["events"]] == ["alive"]
+        assert set(batches[0]["events"][0]) == {"t", "at"}
+        clock[0] += 60
+        ship.ship()                                  # one minute later: nothing to send
+        assert len(batches) == 1
+        clock[0] += ship.ALIVE_AFTER_SECONDS - 60
+        ship.ship()                                  # four minutes after the last batch
+        assert len(batches) == 2
+
+
+def test_real_events_are_a_signal_of_life_and_the_alive_event_is_not_added(ship_app, monkeypatch):
+    batches = []
+    monkeypatch.setattr(ship, "post", lambda data: batches.append(json.loads(gzip.decompress(data))) or 202)
+    record(ship_app, 2)
+    with ship_app.test_request_context():
+        assert ship.ship() == 2
+    assert [e["t"] for e in batches[0]["events"]] == ["form", "form"]
+
+
+def test_an_unreachable_collector_does_not_fill_the_buffer_with_alive_signals(ship_app, monkeypatch):
+    posts = []
+    monkeypatch.setattr(ship, "post", lambda data: posts.append(json.loads(gzip.decompress(data))) or 503)
+    with ship_app.test_request_context():
+        for _ in range(3):
+            with pytest.raises(ship.ShipError):
+                ship.ship()
+        assert len({p["batch"] for p in posts}) == 1       # the same single signal, sent again
+        assert [e["t"] for p in posts for e in p["events"]] == ["alive"] * 3
+        assert buffered(ship_app) == []
+
+
+def test_the_browser_cannot_send_an_alive_event(on_app):
+    assert beacon.clean({"t": "alive"}) is None

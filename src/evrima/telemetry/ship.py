@@ -17,11 +17,19 @@ website. How a batch travels (reviewed 2026-11-06):
 
 Redirects are never followed: the batch carries the website's token, and a
 redirect could take it to another host or to plain HTTP.
+
+Alive signal (2026-11-15): a website nobody visits has nothing to send, and the
+collector would take its silence for an outage. When nothing has been
+accepted for `ALIVE_AFTER_SECONDS` and nothing is waiting, the shipper adds an
+`alive` event, so a running website reaches the collector at least every five
+minutes (the shipper runs every minute). Monitoring of the website is built on
+that: no batch for 12 minutes means it is down.
 """
 
 import gzip
 import http.client
 import json
+import time
 import urllib.error
 import urllib.request
 import uuid
@@ -41,6 +49,14 @@ LOCK_KEY = "evrima:telemetry:ship"
 # Longer than one batch can take (a timeout of 10 s); refreshed after every batch.
 LOCK_SECONDS = 120
 _LOCAL_INFLIGHT = "evrima.telemetry.inflight"
+
+# When the collector last accepted a batch (epoch seconds). In Redis, so that a
+# restart of the website does not look like silence, nor does a second replica
+# add a signal of its own.
+LAST_SENT_KEY = "evrima:telemetry:last_sent"
+_LOCAL_LAST_SENT = "evrima.telemetry.last_sent"
+# The shipper runs every minute, so 4 minutes means a batch at least every 5.
+ALIVE_AFTER_SECONDS = 240
 
 
 class ShipError(RuntimeError):
@@ -128,6 +144,48 @@ def _unlock(token: str) -> None:
         client.delete(LOCK_KEY)
 
 
+def _mark_sent() -> None:
+    """Remember that the collector has just accepted a batch."""
+    client = redis_client.get_client()
+    if client is None:
+        current_app.extensions[_LOCAL_LAST_SENT] = time.time()
+    else:
+        client.set(LAST_SENT_KEY, repr(time.time()))
+
+
+def _last_sent() -> float | None:
+    """When the collector last accepted a batch, or None when it never did (or Redis forgot)."""
+    client = redis_client.get_client()
+    if client is None:
+        return current_app.extensions.get(_LOCAL_LAST_SENT)
+    value = client.get(LAST_SENT_KEY)
+    try:
+        return float(_text(value)) if value is not None else None
+    except ValueError:
+        return None
+
+
+def _pending() -> bool:
+    """True when events are waiting in the buffer or in flight."""
+    client = redis_client.get_client()
+    if client is None:
+        return bool(current_app.extensions.get(telemetry._LOCAL_KEY)
+                    or current_app.extensions.get(_LOCAL_INFLIGHT))
+    return bool(client.llen(telemetry.BUFFER_KEY) or client.llen(INFLIGHT_KEY))
+
+
+def _add_alive() -> None:
+    """Buffer an `alive` event when the collector has heard nothing for a while.
+
+    Not while events are waiting: they make a batch of their own, and if the
+    collector is down this keeps the buffer from filling with one signal a
+    minute (the one in flight is sent again until it is taken).
+    """
+    last = _last_sent()
+    if (last is None or time.time() - last >= ALIVE_AFTER_SECONDS) and not _pending():
+        telemetry.push({"t": "alive", "at": telemetry.now_iso()})
+
+
 def payload(batch: str, events: list[str]) -> bytes:
     """The batch as the protocol describes it, gzip-compressed."""
     body = {
@@ -158,7 +216,7 @@ def post(data: bytes) -> int:
 
 
 def ship() -> int:
-    """Send the whole buffer in batches; return how many events the collector took.
+    """Send the whole buffer in batches; return how many events (not counting alive signals) the collector took.
 
     Raises ShipError when the collector refuses for a reason that a later run
     may not have (unreachable, redirect, 401, 429, 5xx) or Redis is down; the
@@ -175,11 +233,14 @@ def ship() -> int:
         return 0
     sent = 0
     try:
+        _add_alive()
         while (batch := _take(BATCH_SIZE)) is not None:
             batch_id, events = batch
             status = post(payload(batch_id, events))
             if status in (200, 202):
-                sent += len(events)
+                _mark_sent()
+                # The alive signal is not data: it is not reported as sent.
+                sent += sum(1 for item in events if not item.startswith('{"t":"alive"'))
             elif status in (400, 413):
                 # The batch itself is wrong; sending it again cannot help and
                 # would block everything behind it.
