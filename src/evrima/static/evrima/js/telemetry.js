@@ -1,7 +1,7 @@
 // Evrima telemetry, browser part: page views with load times, and clicks on
 // phone, e-mail, external and marked (data-track) links, sent to the website
-// itself with navigator.sendBeacon. Protocol: docs/protocol.md in
-// evrima-telemetry.
+// itself with navigator.sendBeacon. Protocol: the collector's
+// protocol document (docs/protocol.md).
 //
 // Level 1 (default): no cookies, nothing stored in the browser, nothing about
 // the visitor. Level 2 (data-visitors="<consent category>"): only after the

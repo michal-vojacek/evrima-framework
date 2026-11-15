@@ -2,7 +2,7 @@
 
 A lightweight, security-first framework and CMS on top of Flask for simple websites. Every website is a separate lightweight project that uses Evrima as its core: the framework provides security, the database layer, the admin with login, uploads and a rich-text editor, and the module mechanism; the website provides routes, templates, content and its modules, written for its client ([docs/modules.md](docs/modules.md)).
 
-**Status:** version `1.x`, the first production version `1.0.0` released on 2026-11-06 for the launch of the author's own website. Releases follow semantic versioning: an incompatible change only in a new `MAJOR` version ([CHANGELOG](CHANGELOG.md)). The telemetry collector is a separate project, not built yet.
+**Status:** version `1.x`, the first production version `1.0.0` released on 2026-11-06 for the launch of the author's own website. Releases follow semantic versioning: an incompatible change only in a new `MAJOR` version ([CHANGELOG](CHANGELOG.md)). The telemetry collector is a separate service operated by the author, in production use since 2026-11-15.
 
 Architecture and decisions: [docs/framework.md](docs/framework.md).
 

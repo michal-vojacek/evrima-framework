@@ -10,7 +10,7 @@ Status: architecture decided, implementation in progress. Decided items carry a 
 
 - Evrima lives in its own Git repository and is developed as a **Python package** (decided 2026-10-14). The repository is on GitHub, `github.com/michal-vojacek/evrima-framework` (decided 2026-11-05: one account for all of the author's projects).
 - **Evrima is open source under the MIT licence** (decided 2026-10-14): anyone may use it for anything, copy it and redistribute it. The only condition is keeping the copyright and licence notice in copies.
-- **The Evrima repository is public** (decided 2026-10-14; public since 2026-11-05), so that a client who does not want Michal's hosting, or another supplier, can build the website. Such a client usually receives a finished build that already contains Evrima. The weby-vojacek.cz repository (with business documents) stays private.
+- **The Evrima repository is public** (decided 2026-10-14; public since 2026-11-05), so that a client who does not want Michal's hosting, or another supplier, can build the website. Such a client usually receives a finished build that already contains Evrima. The author's own website lives in a separate repository, like every other website, and that repository is not public.
 - The public repository must never contain secrets or internal information. A security fix is publicly visible once pushed, so it is deployed straight away.
 - Every website (weby-vojacek.cz included) is a separate lightweight project that uses Evrima as its core.
 
@@ -20,7 +20,7 @@ Status: architecture decided, implementation in progress. Decided items carry a 
 - A deploy never fetches the "latest" version. Updating the framework is a deliberate change of that setting and a redeploy; whether and when a given website is updated is Michal's call. Release procedure: Michal creates a new version (tag) on GitHub, then changes the setting of the websites to update.
 - Dependencies of Evrima and of client applications are pinned to exact versions (`flask==…`), transitive ones included; the list is produced with `pip freeze`. Package hashes are not used (decided 2026-10-14).
 - Migrations run once, before the new version starts. If they fail, the new version does not start (decided 2026-10-14).
-- Every telemetry batch carries the running Evrima version, so the collector (not built yet) can list websites left on an old release.
+- Every telemetry batch carries the running Evrima version, so the collector can list websites left on an old release.
 
 **Deploy on DWM (decided 2026-11-05):** websites run on DWM, the author's Docker Compose manager. DWM clones the website's repository, runs its `docker-compose.yml` with the stack's settings and routes domains through Caddy (TLS). The website's compose file and Dockerfile carry the framework version:
 - The stack has build enabled; every deploy runs `docker compose up --build`. The Dockerfile's build stage installs `evrima @ git+https://github.com/michal-vojacek/evrima-framework.git@v${EVRIMA_VERSION}`, with `EVRIMA_VERSION` from the stack's settings (passed as a build argument).
@@ -49,6 +49,7 @@ Binding rules:
 - Every release has an entry in `CHANGELOG.md`: what changed and whether websites need any change.
 - Release tags are **protected** (on GitHub: a tag ruleset forbidding updates and deletion of `v*` tags), so a released version cannot be moved to other code or deleted (decided 2026-10-14; ruleset "release tags" active since 2026-11-06: no updates, deletions or force pushes of `v*` tags, empty bypass list, creation allowed). Tag signatures are not verified.
 - `1.0.0` (2026-11-06) is the first production version, released for the launch of weby-vojacek.cz (decided by Michal on 2026-11-06). The only earlier release, `0.1.0`, has the same code apart from the changelog.
+- `1.0.1` (2026-11-15) is a PATCH release, released to fix the values the telemetry shipper sends (decided by Michal on 2026-11-15); it also brings the documentation up to date.
 
 ## Responsibilities
 
@@ -152,7 +153,7 @@ Implementation (2026-10-14, reviewed and kept 2026-11-06): catalogues are TOML f
 
 ## Telemetry (decided 2026-10-14)
 
-- `TELEMETRY_ENDPOINT` in `.env`: empty = off; an address = shipping to the telemetry collector (evrima-telemetry; only its protocol exists, the collector is not built yet).
+- `TELEMETRY_ENDPOINT` in `.env`: empty = off; an address = shipping to the telemetry collector (a separate service operated by the author, in production use since 2026-11-15; its protocol is documented in the collector's repository).
 - Shipping is asynchronous and batched. An outage of the telemetry server must neither slow down nor break the website.
 - IP addresses are not stored.
 - When data from client websites is sent to Michal's server, Michal is probably a processor under GDPR and needs a data processing agreement with the client (indicative, to be verified with a lawyer).
@@ -160,7 +161,7 @@ Implementation (2026-10-14, reviewed and kept 2026-11-06): catalogues are TOML f
 
 **Two telemetry levels:**
 - **Level 1, default, without analytics cookies:** operational measurement (response time, page loads and the like), clicks on CTAs, phone, e-mail, WhatsApp and similar links, and submitted enquiries. Clicks are actions on the website, not cookies (decided 2026-10-14).
-- **Level 2, with consent (decided 2026-11-06):** recognising unique and returning visitors by a first-party cookie, only after consent through the consent banner. The website switches it on with `TELEMETRY_VISITORS`, naming the consent category it depends on (e.g. `analytics`). Once the visitor allows that category, the script stores 16 random bytes in the `evrima_vid` cookie for 13 months (set once, not extended); the beacon adds it to page views and clicks as `vid` only after checking the consent in the request's own consent cookie, and withdrawing the consent deletes the cookie. The identifier is personal data (an online identifier), so the website's privacy policy must mention it; the skeleton does so on its own. The collector's side is in the protocol (evrima-telemetry, `docs/protocol.md`).
+- **Level 2, with consent (decided 2026-11-06):** recognising unique and returning visitors by a first-party cookie, only after consent through the consent banner. The website switches it on with `TELEMETRY_VISITORS`, naming the consent category it depends on (e.g. `analytics`). Once the visitor allows that category, the script stores 16 random bytes in the `evrima_vid` cookie for 13 months (set once, not extended); the beacon adds it to page views and clicks as `vid` only after checking the consent in the request's own consent cookie, and withdrawing the consent deletes the cookie. The identifier is personal data (an online identifier), so the website's privacy policy must mention it; the skeleton does so on its own. The collector's side is in the collector's protocol document (`docs/protocol.md`).
 - Clicks are measured by a small own script (event listeners), because `tel:` and `mailto:` links and links to other websites never reach the server.
 
 Principles taken over from an earlier telemetry project of the author:
@@ -171,25 +172,30 @@ Principles taken over from an earlier telemetry project of the author:
 - Response times are shipped as samples, not as computed percentiles (a percentile cannot be built from other percentiles).
 - Every batch carries the running versions.
 
-**Data path and retention (decided 2026-10-14):**
+**Data path and retention (decided 2026-10-14, schedule updated 2026-11-15):**
 - The application writes telemetry to its Redis. From there it is shipped every minute to `TELEMETRY_ENDPOINT`. Redis acts as a buffer: data survives an application restart and a short outage of the collector.
-- Collector side (not built yet): the central database downsamples progressively: the older the data, the coarser the time bucket. The last week in full detail matters most; older data only needs summaries per bucket.
-- After a week, individual records (specific errors, slow requests, logs) are dropped. Only summaries remain (e.g. errors per hour).
-- A bucket summary stores count, sum, minimum and maximum, and for response times also the basis for percentiles (e.g. TimescaleDB `uddsketch`). An average is computed as sum / count, never as an average of averages, so it is correct at every level.
+- Collector side: the central database downsamples progressively: the older the data, the coarser the time bucket. The last week in full detail matters most; older data only needs summaries per bucket. The collector is built, and its retention schedule is documented with the collector, not here: the collector's internal business, not part of the protocol, so a website never depends on it.
+- After a week, individual records (specific errors, slow requests) are dropped. Only summaries remain.
+- A bucket summary stores count, sum, minimum and maximum, and for response times also a histogram that gives the percentiles. An average is computed as sum / count, never as an average of averages, so it is correct at every level.
 - Summaries are filled by an own worker, not by automatic database aggregates (they proved hard to control in an earlier project of the author).
 
-Downsampling levels (decided 2026-10-14):
+Retention schedule of the collector's defaults (the collector's settings can change it; the collector's own documentation is authoritative):
 
-| Resolution | Retention | Purpose |
+| Data | Kept for | Purpose |
 |---|---|---|
-| 5 minutes | 7 days | troubleshooting, full detail including individual errors |
-| 1 hour | 3 months | trends over the last quarter |
-| 1 day | unlimited | long-term overview, monthly reports for clients |
+| Individual events (raw) | 7 days | troubleshooting, full detail including individual errors |
+| 5-minute summaries | 30 days | what happened on a given afternoon |
+| 30-minute summaries | 180 days | trends over the last half year |
+| Daily summaries | 400 days | long-term overview, monthly reports for clients, this month against the same month last year |
+| Visitor hashes (level 2): presence per day | 45 days | the monthly count of unique visitors |
+| Visitor hashes (level 2): first seen | 400 days after the first visit | recognising returning visitors; 400 days is the lifetime of the `evrima_vid` cookie, which is never extended |
+
+The visitor identifier is stored only as a keyed hash, never as the cookie value; beyond 45 days only counts are kept, not identifiers. The first proposal (5 minutes for 7 days, 1 hour for 3 months, 1 day without a limit) was replaced by this schedule when the collector was built.
 
 ## Repositories (decided 2026-10-14, updated 2026-11-05)
 
 - This repository holds only the framework. Every file is in English.
-- The weby-vojacek.cz website has its own private repository (since 2026-11-05) and uses Evrima like any other website.
+- The author's own website lives in a separate repository (since 2026-11-05) and uses Evrima like any other website.
 - This repository started with a **fresh history** containing only the framework files (decided 2026-10-14). The old shared history contains internal business information and is never published.
 - The design audit of 2026-10-14 cites the website's business documents, so it stays in the website's repository. Its outcomes are recorded here as decisions.
 
@@ -255,7 +261,7 @@ Implementation (2026-10-15, reviewed and kept 2026-11-06):
 - A render time stamp signed with `SECRET_KEY`, salted with the form's name. A form sent back sooner than 3 seconds (adjustable per call), with a missing or forged stamp, or with a stamp of another form counts as a bot. A stamp older than 7 days counts as a bot too (decided 2026-11-06), so a bot cannot fetch the form once and reuse its stamp for ever. The limit is long on purpose: a refused person is told nothing, so a form left open in a tab over a weekend must still work.
 - A form caught by the honeypot should look accepted and send nothing, so the bot learns nothing. It stops only simple bots; the per-form rate limit and CSRF do the rest. Websites must not use the names `homepage` and `form_stamp` for their own fields.
 
-**Telemetry, website side (implemented 2026-11-05, reviewed and kept 2026-11-06):** `evrima.telemetry`, following the protocol in the evrima-telemetry repository (`docs/protocol.md`, the contract with the collector; change it there first).
+**Telemetry, website side (implemented 2026-11-05, reviewed and kept 2026-11-06):** `evrima.telemetry`, following the protocol document in the collector's repository (`docs/protocol.md`, the contract with the collector; change it there first).
 - On when `TELEMETRY_ENDPOINT` is set; `TELEMETRY_TOKEN` (the website's token, generated and named in the collector) is then required, and the endpoint must be HTTPS in production, except `localhost` and `127.0.0.1` (the token travels in every batch). The address is parsed, and one with a user name, password, query or fragment is refused.
 - Server events: every request (endpoint name, method, status class, server time; not static files, uploads, the health check or the beacon), unhandled errors (exception class only, never the message), and form results recorded by the website (`telemetry.event("form", form="contact", result="sent")`).
 - Browser events: `{{ telemetry_script() }}` in the website's layout serves `static/evrima/js/telemetry.js` (nothing when off). It sends page views (path without query, entry visit or not, external referrer host, device class, load times) and clicks on `tel:`, `mailto:`, external links and elements marked `data-track="label"` to `POST /_evrima/t` on the website itself. The beacon checks every event against the protocol and drops anything else; no CSRF token (sendBeacon cannot send one, the beacon only counts), 120 requests a minute per client. Only requests from the website's own pages are counted (`Sec-Fetch-Site: same-origin`, or the website's own `Origin`), and the body is read with a cap of 2 KB.
@@ -390,7 +396,7 @@ A website with its own models adds its migration branch (`mysite/migrations/vers
 ### Outside the Evrima repository
 
 - **DWM:** the author's Docker Compose manager that runs the websites. Evrima supplies nothing to it directly; the website template carries the Dockerfile and compose file.
-- **Central telemetry collection** (ingest, downsampling worker, database): the evrima-telemetry project; only its protocol exists, the collector is not built yet. A self-hosting client does not need it.
+- **Central telemetry collection** (ingest, downsampling worker, database): a separate service operated by the author, built and in production use since 2026-11-15. A self-hosting client does not need it.
 
 ## Example: Reference model (implemented 2026-10-15, see "References module of the example website")
 

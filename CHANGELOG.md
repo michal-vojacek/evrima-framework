@@ -2,6 +2,16 @@
 
 Every release states what changed and whether websites need any change. Versioning rules: [docs/framework.md](docs/framework.md).
 
+## 1.0.1 (2026-11-15)
+
+Fixes of the telemetry shipper, so that the collector never has to drop a value, and a documentation update:
+
+- A request that matches no route is sent with `endpoint: "(none)"` (the exact string the protocol names), never an empty or missing one. A request answered before the timer started is sent with `ms: 0` instead of `null`.
+- Numeric values are clamped to the protocol's ranges instead of being sent out of range (or, for browser timings, dropped): `ms` of a request to 0 to 3 600 000 (`telemetry.MAX_REQUEST_MS`), the browser timings `ttfb`, `dom` and `load` to 0 to 600 000 (`telemetry.MAX_TIMING_MS`).
+- Only real HTTP methods (`GET`, `HEAD`, `POST`, `PUT`, `PATCH`, `DELETE`, `OPTIONS`) produce a request event; a request with any other method is not recorded.
+- Also corrected: the "Data path and retention" section of `docs/framework.md` now describes the current retention schedule of the collector.
+- Websites need changes: no. Upgrade Evrima (set a new `EVRIMA_VERSION` once this is released); no code or configuration of a website changes.
+
 ## 1.0.0 (2026-11-06)
 
 The first production version, for the launch of weby-vojacek.cz. The code is the same as in 0.1.0; from this version on an incompatible change comes only in a new MAJOR version.
@@ -23,7 +33,7 @@ The first release, for testing the deploy (versions 0.x are development releases
 - Rich-text editor (`evrima.editor`): headings, paragraphs, bold, links and lists, cleaned with `nh3` on save and on output (`rich` template filter).
 - Modules: `create_app(..., modules=[...])` enables the website's modules with their own admin screens, menu items, text catalogue and migration branch; module names are checked, unprotected admin blueprints are refused, generated migrations only touch their own branch's tables and never drop tables without a model; helpers `evrima.admin.forms.parse_id()` / `parse_ids()`. No ready-made content modules: each website writes its own following `docs/modules.md`; the example website's references module is the pattern.
 - Honeypot for public forms (`evrima.security.honeypot`): a hidden trap field and a signed render time (3 seconds to 7 days), `{{ honeypot("form") }}` in templates and `honeypot.looks_like_bot(request.form, "form")` in views.
-- Telemetry, website side (`evrima.telemetry`): request, error and form events, a cookie-free browser script for page views and clicks (`data-track` labels) with a same-origin beacon, a Redis buffer and `flask evrima telemetry ship` (batches kept in flight until accepted, retried with the same id, one shipper at a time, no redirects). Settings `TELEMETRY_ENDPOINT` and `TELEMETRY_TOKEN`. Level 2 with consent (`TELEMETRY_VISITORS`): a random visitor id in the `evrima_vid` cookie, added to browser events as `vid` only while the visitor allows the named category. Protocol: evrima-telemetry, `docs/protocol.md`.
+- Telemetry, website side (`evrima.telemetry`): request, error and form events, a cookie-free browser script for page views and clicks (`data-track` labels) with a same-origin beacon, a Redis buffer and `flask evrima telemetry ship` (batches kept in flight until accepted, retried with the same id, one shipper at a time, no redirects). Settings `TELEMETRY_ENDPOINT` and `TELEMETRY_TOKEN`. Level 2 with consent (`TELEMETRY_VISITORS`): a random visitor id in the `evrima_vid` cookie, added to browser events as `vid` only while the visitor allows the named category. Protocol: the collector's protocol document, `docs/protocol.md`.
 - Consent banner (`evrima.consent`), the groundwork only: switched on by `CONSENT_CATEGORIES`, the visitor's choice per category in the `evrima_consent` cookie (`CONSENT_VERSION` asks again), a banner and a settings page that work without JavaScript, `consent()` in templates, `evrimaConsent` and the `evrima:consent` event for the website's scripts. Which service needs which category is up to the website.
 - Legal pages (`evrima.legal`): skeletons of the privacy policy and the cookies page in Czech and English (`LEGAL_PAGES`), extending the website's layout (`SITE_LAYOUT`); the cookies page lists the framework's own cookies, the website fills in the rest.
 - `SITE_LANGUAGE` (`cs` or `en`): the language of the consent banner, the legal skeletons and the fallback error page.

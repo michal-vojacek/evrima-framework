@@ -4,12 +4,14 @@ import gzip
 import http.server
 import io
 import json
+import re
 import threading
+import types
 
 import fakeredis
 import pytest
 import redis
-from flask import Blueprint
+from flask import Blueprint, request
 
 from conftest import https_client
 from evrima import redis_client, telemetry
@@ -98,6 +100,58 @@ def test_requests_are_measured_by_endpoint_not_url(on_app):
     assert "someone" not in json.dumps(events)
 
 
+def test_a_request_without_a_route_is_sent_with_the_none_endpoint(on_app):
+    """The protocol wants the exact string, never an empty or missing endpoint."""
+    https_client(on_app).get("/no/such/page")
+    [event] = buffered(on_app)
+    assert event["endpoint"] == "(none)" == telemetry.NO_ENDPOINT
+    assert event["status"] == "404"
+
+
+def test_the_error_of_a_request_without_a_route_uses_the_none_endpoint(on_app):
+    with on_app.test_request_context("/no/such/page"):
+        assert request.endpoint is None
+        telemetry._record_error(on_app, RuntimeError("x"))
+    [event] = buffered(on_app)
+    assert event["endpoint"] == "(none)" and event["error"] == "RuntimeError"
+
+
+def test_the_server_time_is_clamped_to_the_protocols_range(on_app, monkeypatch):
+    # The timer starts at 0 s and stops two hours later.
+    ticks = iter([0.0, 7200.0])
+    monkeypatch.setattr(telemetry, "time", types.SimpleNamespace(perf_counter=lambda: next(ticks)))
+    https_client(on_app).get("/probe")
+    [event] = buffered(on_app)
+    assert event["ms"] == telemetry.MAX_REQUEST_MS == 3_600_000
+
+
+def test_a_request_answered_before_the_timer_started_has_zero_ms(on_app):
+    with on_app.test_request_context("/probe"):
+        telemetry._record_request(on_app.response_class("ok"))
+    [event] = buffered(on_app)
+    assert event["ms"] == 0.0
+
+
+@pytest.mark.parametrize("value, expected", [(5, 5), (-1, 0), (float("nan"), 0), (float("inf"), 10), (99, 10)])
+def test_clamp_ms(value, expected):
+    assert telemetry.clamp_ms(value, 10) == expected
+
+
+@pytest.mark.parametrize("method", sorted(telemetry.HTTP_METHODS))
+def test_real_http_methods_are_recorded(on_app, method):
+    https_client(on_app).open("/probe", method=method)
+    [event] = buffered(on_app)
+    assert event["method"] == method
+    assert re.fullmatch(r"[A-Z]{3,10}", event["method"])      # the protocol's shape
+
+
+@pytest.mark.parametrize("method", ["PROPFIND", "TRACE", "CONNECT", "BREW"])
+def test_other_methods_produce_no_event(on_app, method):
+    """The protocol names no fallback, so a method outside the real ones is not recorded."""
+    https_client(on_app).open("/probe", method=method)
+    assert buffered(on_app) == []
+
+
 def test_an_error_is_recorded_by_class_only(on_app):
     client = https_client(on_app)
     assert client.get("/probe/fail").status_code == 500
@@ -126,8 +180,12 @@ def test_the_script_tag_points_to_the_beacon(on_app):
       "device": "mobile", "ttfb": 120.4, "dom": 450, "load": 910, "extra": "dropped"},
      {"t": "pageview", "path": "/reference", "entry": True, "ref": "google.com", "device": "mobile",
       "ttfb": 120, "dom": 450, "load": 910}),
-    ({"t": "pageview", "path": "/", "entry": "yes", "ref": "<script>", "device": "fridge", "load": 10**9},
+    ({"t": "pageview", "path": "/", "entry": "yes", "ref": "<script>", "device": "fridge", "load": "slow"},
      {"t": "pageview", "path": "/", "entry": False, "ref": "", "device": "desktop"}),
+    # Out-of-range timings are clamped to the protocol's range, not dropped.
+    ({"t": "pageview", "path": "/", "ttfb": 10**9, "dom": -5, "load": 600_000.9},
+     {"t": "pageview", "path": "/", "entry": False, "ref": "", "device": "desktop",
+      "ttfb": telemetry.MAX_TIMING_MS, "dom": 0, "load": telemetry.MAX_TIMING_MS}),
     ({"t": "click", "kind": "tel", "label": "phone-contact"}, {"t": "click", "kind": "tel", "label": "phone-contact"}),
     ({"t": "click", "kind": "external", "host": "www.facebook.com", "label": "facebook"},
      {"t": "click", "kind": "external", "label": "facebook", "host": "facebook.com"}),

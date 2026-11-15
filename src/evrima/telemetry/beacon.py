@@ -1,7 +1,7 @@
 """The beacon: browser events (page views, clicks) sent by static/evrima/js/telemetry.js.
 
 The browser sends to the website itself, never to a third party. Every event
-is checked here against the protocol (docs/protocol.md in evrima-telemetry):
+is checked here against the protocol (the collector's docs/protocol.md):
 only known types and fields, bounded strings, no query strings. Anything else
 is dropped silently. The answer is always 204: the script does not wait for it
 and a bot learns nothing.
@@ -22,15 +22,18 @@ LABEL = re.compile(r"^[A-Za-z0-9_-]{1,40}$")
 HOST = re.compile(r"^[a-z0-9.-]{1,100}$")
 DEVICES = {"mobile", "tablet", "desktop"}
 CLICK_KINDS = {"tel", "mailto", "external", "track"}
-MAX_MS = 600_000                     # ten minutes: anything longer is not a page load
 VISITOR_ID = re.compile(r"^[A-Za-z0-9_-]{22}$")
 
 
 def _ms(value):
-    """A timing in whole milliseconds, or None when absent or implausible."""
+    """A timing in whole milliseconds clamped to the protocol's range, or None when absent or not a number.
+
+    Clamped, not dropped: a value over ten minutes is still a (very) slow
+    page, and the collector would drop the whole event for it.
+    """
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         return None
-    return int(value) if 0 <= value <= MAX_MS else None
+    return int(telemetry.clamp_ms(value, telemetry.MAX_TIMING_MS))
 
 
 def _host(value) -> str:

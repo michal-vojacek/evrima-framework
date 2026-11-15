@@ -112,8 +112,8 @@ def load_config(
         "SITE_HOSTS": site_hosts,
         # Flask refuses requests for other hosts with 400 Bad Request.
         "TRUSTED_HOSTS": trusted_hosts,
-        # Telemetry (evrima/telemetry, protocol in the evrima-telemetry
-        # repository): empty endpoint = off; the token identifies the website.
+        # Telemetry (evrima/telemetry, protocol in the collector's
+        # protocol document): empty endpoint = off; the token identifies the website.
         "TELEMETRY_ENDPOINT": env.get("TELEMETRY_ENDPOINT", "").strip().rstrip("/"),
         "TELEMETRY_TOKEN": env.get("TELEMETRY_TOKEN", "").strip(),
         # Where uploaded files are stored (evrima/media). Empty: the app's

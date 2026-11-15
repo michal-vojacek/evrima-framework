@@ -1,7 +1,7 @@
 """Telemetry: collecting events, buffering them in Redis, shipping them to the collector.
 
 The protocol (what is collected and how it is sent) is the contract with the
-collector and lives in the evrima-telemetry repository, docs/protocol.md. In
+collector and lives in the collector's repository, docs/protocol.md. In
 short: level 1 (docs/framework.md, "Telemetry") collects no personal data and
 sets no cookies; server events (requests, errors, forms) come from this module,
 browser events (page views, clicks) from static/evrima/js/telemetry.js through
@@ -27,6 +27,7 @@ beacon stores nothing (the script file itself stays a public static file).
 """
 
 import json
+import math
 import time
 from datetime import UTC, datetime
 
@@ -53,6 +54,23 @@ VISITOR_MAX_AGE_DAYS = 396
 # by Docker) and the beacon itself (it would count every page twice).
 SKIPPED_ENDPOINTS = {"static", "evrima.static", "evrima_health.health", "evrima_media.serve",
                      "evrima_telemetry.beacon"}
+
+# What the collector accepts (protocol: "Values the collector accepts"). The
+# website clamps to these instead of sending more, so an odd value never costs
+# an event.
+NO_ENDPOINT = "(none)"                 # a request that matched no route has no Flask endpoint
+MAX_REQUEST_MS = 3_600_000             # `ms` of a request: one hour
+MAX_TIMING_MS = 600_000                # `ttfb`, `dom`, `load`: ten minutes
+# Real HTTP methods. The protocol only asks for 3 to 10 capital letters and names
+# no fallback, so a request with any other method is not recorded at all.
+HTTP_METHODS = frozenset({"GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"})
+
+
+def clamp_ms(value: float, maximum: float) -> float:
+    """`value` limited to 0..`maximum`; NaN (which compares false with everything) becomes 0."""
+    if math.isnan(value):
+        return 0.0
+    return min(max(value, 0.0), maximum)
 
 
 def enabled() -> bool:
@@ -106,10 +124,11 @@ def _start_timer() -> None:
 def _record_request(response):
     """Record the request that produced `response`. Never raises."""
     try:
-        if enabled() and request.endpoint not in SKIPPED_ENDPOINTS:
+        if enabled() and request.endpoint not in SKIPPED_ENDPOINTS and request.method in HTTP_METHODS:
             start = g.get("evrima_telemetry_start")
-            ms = round((time.perf_counter() - start) * 1000, 1) if start is not None else None
-            push({"t": "request", "at": now_iso(), "endpoint": (request.endpoint or "(none)")[:100],
+            # No timer means an earlier before_request handler answered first: 0, never null.
+            ms = round(clamp_ms((time.perf_counter() - start) * 1000, MAX_REQUEST_MS), 1) if start is not None else 0.0
+            push({"t": "request", "at": now_iso(), "endpoint": (request.endpoint or NO_ENDPOINT)[:100],
                   "method": request.method, "status": _status(response.status_code), "ms": ms})
     except Exception:  # noqa: BLE001
         current_app.logger.warning("Telemetry of a request was lost.", exc_info=True)
@@ -118,7 +137,7 @@ def _record_request(response):
 
 def _record_error(sender, exception, **extra) -> None:
     """Record an unhandled exception: its class only, never its message (it may hold personal data)."""
-    event("error", endpoint=(request.endpoint or "(none)")[:100], error=type(exception).__name__[:100])
+    event("error", endpoint=(request.endpoint or NO_ENDPOINT)[:100], error=type(exception).__name__[:100])
 
 
 def script() -> Markup:

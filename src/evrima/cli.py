@@ -93,7 +93,7 @@ def media_cleanup_command() -> None:
 
 @evrima_cli.group("telemetry")
 def telemetry_cli() -> None:
-    """Telemetry (see the protocol in the evrima-telemetry repository)."""
+    """Telemetry (see the collector's protocol document)."""
 
 
 @telemetry_cli.command("ship")
